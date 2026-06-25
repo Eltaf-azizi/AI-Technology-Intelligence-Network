@@ -38,4 +38,27 @@ COMPARISONS_DB = {
             "Kubernetes": "Widespread - 85% adoption in enterprises"
         }
     ),
-    
+    "tensorflow-vs-pytorch": ComparisonResult(
+        tech1="TensorFlow",
+        tech2="PyTorch",
+        strengths={
+            "TensorFlow": "Production-ready, TensorBoard visualization, TF Serving, strong mobile support",
+            "PyTorch": "Pythonic API, dynamic graphs, easier debugging, research-friendly, growing ecosystem"
+        },
+        weaknesses={
+            "TensorFlow": "Steeper learning curve, verbose API, debugging challenges",
+            "PyTorch": "Newer production tooling, smaller mobile ecosystem"
+        },
+        useCases={
+            "TensorFlow": "Production deployment, mobile/edge inference, large-scale distributed training",
+            "PyTorch": "Research prototyping, academic projects, dynamic model architectures"
+        },
+        learningCurve={
+            "TensorFlow": "Moderate - 2-4 months",
+            "PyTorch": "Moderate - 1-3 months"
+        },
+        adoption={
+            "TensorFlow": "68% market share, strong in industry",
+            "PyTorch": "Growing rapidly, 55% of research papers use it"
+        }
+    ),
