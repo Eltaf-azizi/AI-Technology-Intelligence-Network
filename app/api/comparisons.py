@@ -62,3 +62,52 @@ COMPARISONS_DB = {
             "PyTorch": "Growing rapidly, 55% of research papers use it"
         }
     ),
+    "react-vs-angular": ComparisonResult(
+        tech1="React",
+        tech2="Angular",
+        strengths={
+            "React": "Flexible, huge ecosystem, excellent performance, great developer experience",
+            "Angular": "Full-featured framework, TypeScript-first, strong opinions, enterprise-ready"
+        },
+        weaknesses={
+            "React": "Not a full framework, requires additional libraries, too many choices",
+            "Angular": "Steep learning curve, verbose, opinionated, heavy bundle size"
+        },
+        useCases={
+            "React": "SPAs, interactive UIs, mobile (React Native), component libraries",
+            "Angular": "Enterprise apps, large teams, complex forms, full-featured SPAs"
+        },
+        learningCurve={
+            "React": "Easy to start - 2-4 months",
+            "Angular": "Steep - 3-6 months"
+        },
+        adoption={
+            "React": "82% developer satisfaction, most popular frontend framework",
+            "Angular": "Strong enterprise adoption, 45% developer satisfaction"
+        }
+    ),
+    "sql-vs-nosql": ComparisonResult(
+        tech1="SQL",
+        tech2="NoSQL",
+        strengths={
+            "SQL": "ACID compliance, complex queries, joins, strong consistency, mature ecosystem",
+            "NoSQL": "Horizontal scaling, flexible schemas, high performance for simple queries, great for big data"
+        },
+        weaknesses={
+            "SQL": "Vertical scaling limits, rigid schema, less suited for unstructured data",
+            "NoSQL": "No ACID guarantees, limited query capabilities, eventual consistency"
+        },
+        useCases={
+            "SQL": "Financial systems, CRM, ERP, structured data with relationships",
+            "NoSQL": "Real-time apps, IoT, content management, big data analytics"
+        },
+        learningCurve={
+            "SQL": "Easy - 1-2 months",
+            "NoSQL": "Moderate - 2-4 months"
+        },
+        adoption={
+            "SQL": "Universal - 90% of systems use a relational database",
+            "NoSQL": "Growing - 60% of new projects consider NoSQL"
+        }
+    ),
+}
