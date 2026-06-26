@@ -111,3 +111,44 @@ COMPARISONS_DB = {
         }
     ),
 }
+
+@router.get("/{comparison_id}", response_model=ComparisonResult)
+async def get_comparison(comparison_id: str):
+    """Get a specific technology comparison"""
+    comparison = COMPARISONS_DB.get(comparison_id.lower())
+    if not comparison:
+        raise HTTPException(
+            status_code=404,
+            detail=f"Comparison '{comparison_id}' not found. Available: {list(COMPARISONS_DB.keys())}"
+        )
+    return comparison
+
+@router.get("", response_model=list[dict])
+async def list_comparisons():
+    """List all available comparisons"""
+    return [
+        {
+            "id": "docker-vs-kubernetes",
+            "tech1": "Docker",
+            "tech2": "Kubernetes",
+            "description": "Container technology comparison"
+        },
+        {
+            "id": "tensorflow-vs-pytorch",
+            "tech1": "TensorFlow",
+            "tech2": "PyTorch",
+            "description": "Deep learning framework comparison"
+        },
+        {
+            "id": "react-vs-angular",
+            "tech1": "React",
+            "tech2": "Angular",
+            "description": "Frontend framework comparison"
+        },
+        {
+            "id": "sql-vs-nosql",
+            "tech1": "SQL",
+            "tech2": "NoSQL",
+            "description": "Database technology comparison"
+        },
+    ]
