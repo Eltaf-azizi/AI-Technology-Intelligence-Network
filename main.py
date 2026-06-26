@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from app.api import technologies, relationships, careers, trends, mentor, research, comparisons
+from app.api import technologies, relationships, careers, trends, mentor, research
 
 app = FastAPI(
     title="ATIN - AI Technology Intelligence Network API",
@@ -22,7 +22,6 @@ app.include_router(careers.router, prefix="/api/careers", tags=["careers"])
 app.include_router(trends.router, prefix="/api/trends", tags=["trends"])
 app.include_router(mentor.router, prefix="/api/mentor", tags=["mentor"])
 app.include_router(research.router, prefix="/api/research", tags=["research"])
-app.include_router(comparisons.router, prefix="/api/comparisons", tags=["comparisons"])
 
 @app.get("/api/health")
 async def health_check():

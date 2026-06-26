@@ -33,15 +33,17 @@ from app.api import (
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     logger.info(f"Starting {settings.APP_NAME} v{settings.VERSION}")
-    init_db()
-    db = SessionLocal()
-    try:
-        seed_database(db)
-    finally:
-        db.close()
-    logger.info("Database initialized and seeded")
+    if not os.getenv("ATIN_TESTING"):
+        init_db()
+        db = SessionLocal()
+        try:
+            seed_database(db)
+        finally:
+            db.close()
+        logger.info("Database initialized and seeded")
     yield
-    logger.info("Shutting down")
+    if not os.getenv("ATIN_TESTING"):
+        logger.info("Shutting down")
 
 
 app = FastAPI(
@@ -73,12 +75,19 @@ async def log_requests(request: Request, call_next):
 
 @app.get("/api/health")
 async def health_check():
+    from app.models.models import Technology, Relationship
+    db = SessionLocal()
+    try:
+        tech_count = db.query(Technology).count()
+        rel_count = db.query(Relationship).count()
+    finally:
+        db.close()
     return {
         "status": "online",
         "version": settings.VERSION,
         "name": settings.APP_NAME,
-        "technologies_in_graph": 30,
-        "relationships_in_graph": 47,
+        "technologies_in_graph": tech_count,
+        "relationships_in_graph": rel_count,
     }
 
 

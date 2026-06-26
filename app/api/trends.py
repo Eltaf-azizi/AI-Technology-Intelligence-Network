@@ -12,12 +12,9 @@ trends_db = [
     TrendData(name="Cybersecurity AI", category="Security", growth=94, momentum=90, stage="Growing"),
     TrendData(name="Quantum Computing", category="Emerging", growth=88, momentum=82, stage="Emerging"),
     TrendData(name="Edge AI", category="AI", growth=90, momentum=85, stage="Growing"),
-    TrendData(name="WebAssembly", category="Infrastructure", growth=75, momentum=72, stage="Growing"),
     TrendData(name="Blockchain", category="Emerging", growth=55, momentum=45, stage="Declining"),
-    TrendData(name="Flutter", category="Mobile", growth=78, momentum=72, stage="Mature"),
     TrendData(name="Rust", category="Languages", growth=88, momentum=85, stage="Growing"),
     TrendData(name="Web3", category="Emerging", growth=45, momentum=38, stage="Declining"),
-    TrendData(name="Kubernetes", category="DevOps", growth=82, momentum=78, stage="Mature"),
     TrendData(name="Prompt Engineering", category="AI", growth=96, momentum=92, stage="Growing"),
 ]
 
