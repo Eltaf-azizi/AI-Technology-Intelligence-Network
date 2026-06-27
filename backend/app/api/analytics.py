@@ -14,5 +14,4 @@ async def get_dashboard(db: Session = Depends(get_db)):
 
 @router.get("/analytics/summary")
 async def get_summary(db: Session = Depends(get_db)):
-    data = AnalyticsService.get_dashboard(db)
-    return data["summary"]
+    return AnalyticsService.get_dashboard(db)["summary"]

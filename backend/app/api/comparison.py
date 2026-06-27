@@ -10,8 +10,7 @@ router = APIRouter(tags=["comparison"])
 
 @router.get("/compare/available")
 async def get_comparison_candidates(db: Session = Depends(get_db)):
-    techs = db.query(Technology).all()
-    return {"technologies": [{"slug": t.slug, "name": t.name, "category": t.category} for t in techs]}
+    return {"technologies": [{"slug": t.slug, "name": t.name, "category": t.category} for t in db.query(Technology).all()]}
 
 
 @router.get("/compare", response_model=ComparisonResponse)
