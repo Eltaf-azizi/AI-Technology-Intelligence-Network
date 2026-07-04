@@ -173,3 +173,50 @@ class AnalyticsService:
             "fastest_growing": [{"slug": t.slug, "name": t.name, "icon": t.icon, "growth_rate": t.growth_rate} for t in sorted_by_growth],
         }
 
+
+class ComparisonService:
+    @staticmethod
+    def compare(db: Session, tech1_slug: str, tech2_slug: str) -> Optional[dict]:
+        t1 = db.query(Technology).filter(Technology.slug == tech1_slug).first()
+        t2 = db.query(Technology).filter(Technology.slug == tech2_slug).first()
+        if not t1 or not t2:
+            return None
+
+        def diff_attr(attr):
+            return {t1.name: str(getattr(t1, attr, "")), t2.name: str(getattr(t2, attr, ""))}
+
+        strengths_1 = ", ".join(t1.skills[:3]) if t1.skills else str(t1.growth_rate)
+        strengths_2 = ", ".join(t2.skills[:3]) if t2.skills else str(t2.growth_rate)
+
+        recommendation = t1.name if t1.popularity > t2.popularity else t2.name
+        if t1.growth_rate > t2.growth_rate and t1.difficulty != "Advanced":
+            recommendation = t1.name
+        elif t2.popularity > t1.popularity + 5:
+            recommendation = t2.name
+
+        return {
+            "tech1": t1.name, "tech2": t2.name,
+            "strengths": {t1.name: strengths_1, t2.name: strengths_2},
+            "weaknesses": diff_attr("difficulty"), "use_cases": diff_attr("applications"),
+            "learning_curve": diff_attr("learning_time"),
+            "adoption": {t1.name: f"Popularity: {t1.popularity}/100", t2.name: f"Popularity: {t2.popularity}/100"},
+            "recommendation": f"Based on current trends, {recommendation} has the edge.",
+        }
+
+
+class AuditService:
+    @staticmethod
+    def log(db: Session, user_id: Optional[int], action: str, resource: Optional[str] = None,
+            resource_id: Optional[int] = None, details: Optional[str] = None, ip_address: Optional[str] = None):
+        entry = AuditLog(user_id=user_id, action=action, resource=resource, resource_id=resource_id,
+                         details=details, ip_address=ip_address)
+        db.add(entry); db.commit()
+        return entry
+
+    @staticmethod
+    def get_user_logs(db: Session, user_id: int, skip: int = 0, limit: int = 50) -> List[AuditLog]:
+        return db.query(AuditLog).filter(AuditLog.user_id == user_id).order_by(AuditLog.created_at.desc()).offset(skip).limit(limit).all()
+
+    @staticmethod
+    def get_all_logs(db: Session, skip: int = 0, limit: int = 100) -> List[AuditLog]:
+        return db.query(AuditLog).order_by(AuditLog.created_at.desc()).offset(skip).limit(limit).all()
