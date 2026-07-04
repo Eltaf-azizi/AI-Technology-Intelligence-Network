@@ -55,3 +55,42 @@ class TechnologyService:
         db.delete(tech); db.commit()
         return True
 
+class RelationshipService:
+    @staticmethod
+    def get_all(db: Session) -> List[Relationship]:
+        return db.query(Relationship).all()
+
+    @staticmethod
+    def get_by_technology(db: Session, tech_slug: str) -> List[Relationship]:
+        tech = db.query(Technology).filter(Technology.slug == tech_slug).first()
+        if not tech:
+            return []
+        return db.query(Relationship).filter(
+            or_(Relationship.source_id == tech.id, Relationship.target_id == tech.id)
+        ).all()
+
+    @staticmethod
+    def get_graph(db: Session) -> dict:
+        techs = db.query(Technology).all()
+        rels = db.query(Relationship).all()
+        nodes = [{"id": t.slug, "name": t.name, "category": t.category, "difficulty": t.difficulty,
+                  "popularity": t.popularity, "growth_rate": t.growth_rate, "icon": t.icon, "color": t.color} for t in techs]
+        edges = [{"source": rel.source_tech.slug, "target": rel.target_tech.slug,
+                  "type": rel.type, "strength": rel.strength} for rel in rels]
+        return {"nodes": nodes, "edges": edges}
+
+    @staticmethod
+    def get_related(db: Session, tech_slug: str) -> List[dict]:
+        tech = db.query(Technology).filter(Technology.slug == tech_slug).first()
+        if not tech:
+            return []
+        rels = db.query(Relationship).filter(
+            or_(Relationship.source_id == tech.id, Relationship.target_id == tech.id)
+        ).all()
+        result = []
+        for rel in rels:
+            other = rel.target_tech if rel.source_id == tech.id else rel.source_tech
+            result.append({"slug": other.slug, "name": other.name, "category": other.category,
+                           "icon": other.icon, "relationship_type": rel.type, "strength": rel.strength})
+        return result
+
