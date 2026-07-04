@@ -137,3 +137,39 @@ class TrendService:
         avg_growth = sum(t.growth for t in trends) / total if total > 0 else 0
         return {"total": total, "emerging": emerging, "growing": growing, "mature": mature, "declining": declining, "average_growth": round(avg_growth, 1)}
 
+
+class AnalyticsService:
+    @staticmethod
+    def get_dashboard(db: Session) -> dict:
+        techs = db.query(Technology).all()
+        rels = db.query(Relationship).all()
+        categories = {}
+        for t in techs:
+            cat = t.category
+            if cat not in categories:
+                categories[cat] = {"count": 0, "sum_growth": 0, "sum_popularity": 0}
+            categories[cat]["count"] += 1
+            categories[cat]["sum_growth"] += t.growth_rate
+            categories[cat]["sum_popularity"] += t.popularity
+        category_dist = {cat: {"count": v["count"], "avg_growth": round(v["sum_growth"]/v["count"],1) if v["count"] else 0,
+                                "avg_popularity": round(v["sum_popularity"]/v["count"],1) if v["count"] else 0}
+                         for cat, v in sorted(categories.items())}
+        difficulty_dist = {}
+        for t in techs:
+            d = t.difficulty
+            difficulty_dist[d] = difficulty_dist.get(d, 0) + 1
+        outlook_dist = {}
+        for t in techs:
+            o = t.future_outlook
+            outlook_dist[o] = outlook_dist.get(o, 0) + 1
+        sorted_by_pop = sorted(techs, key=lambda t: t.popularity, reverse=True)[:10]
+        sorted_by_growth = sorted(techs, key=lambda t: t.growth_rate, reverse=True)[:10]
+        return {
+            "summary": {"total_technologies": len(techs), "total_relationships": len(rels),
+                        "total_categories": len(categories), "total_careers": db.query(Career).count()},
+            "category_distribution": category_dist, "difficulty_distribution": difficulty_dist,
+            "outlook_distribution": outlook_dist,
+            "top_by_popularity": [{"slug": t.slug, "name": t.name, "icon": t.icon, "popularity": t.popularity} for t in sorted_by_pop],
+            "fastest_growing": [{"slug": t.slug, "name": t.name, "icon": t.icon, "growth_rate": t.growth_rate} for t in sorted_by_growth],
+        }
+
