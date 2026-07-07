@@ -195,5 +195,55 @@ const paymentMethods = [
 
 
 
+export default function PaymentMethods({ amount, bookingId, onSuccess }) {
+  const { t } = useLang();
+  const { config, loading: configLoading } = useConfig();
+  const [method, setMethod] = useState('card');
 
+
+
+
+  const jazzcashNumber = config?.company_jazzcash_number || FALLBACK_JC_NUMBER;
+  const easypaisaNumber = config?.company_easypaisa_number || FALLBACK_EP_NUMBER;
+  const accountName = config?.company_account_name || FALLBACK_ACCOUNT_NAME;
+
+
+
+
+  return (
+    <div>
+      <h3 style={{ fontSize: '1rem', marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+        <Smartphone size={18} /> {t.payment.method}
+      </h3>
+      <div style={{ display: 'flex', gap: '8px', marginBottom: '24px', flexWrap: 'wrap' }}>
+        {paymentMethods.map(pm => {
+          const Icon = pm.icon;
+          const isActive = method === pm.id;
+          return (
+            <button key={pm.id} onClick={() => setMethod(pm.id)}
+              style={{
+                flex: 1, minWidth: '100px', padding: '12px 8px', borderRadius: '10px', border: isActive ? '2px solid var(--blue)' : '1px solid var(--border)',
+                 alignItems: 'center', gap: '6px', fontWeight: isActive ? '700' : '500', fontSize: '0.85rem', color: isActive ? 'var(--blue)' : 'var(--text-2)',
+                transition: 'all 0.15s'
+              }}>
+               background: isActive ? 'rgba(79,124,255,0.08)' : 'var(--bg-card)', cursor: 'pointer', display: 'flex', flexDirection: 'column',
+              <Icon size={22} />
+              {t.payment[pm.labelKey]}
+            </button>
+          );
+        })}
+      </div>
+
+
+
+
+      <div className="card" style={{ padding: '24px' }}>
+        {method === 'card' && <CardPayment amount={amount} bookingId={bookingId} onSuccess={onSuccess} />}
+        {method === 'jazzcash' && <MobilePayment method="jazzcash" amount={amount} onSuccess={onSuccess} t={t} jazzcashNumber={jazzcashNumber} easypaisaNumber={easypaisaNumber} accountName={accountName} />}
+        {method === 'easypaisa' && <MobilePayment method="easypaisa" amount={amount} onSuccess={onSuccess} t={t} jazzcashNumber={jazzcashNumber} easypaisaNumber={easypaisaNumber} accountName={accountName} />}
+        {method === 'cash' && <CashPayment amount={amount} onSuccess={onSuccess} t={t} />}
+      </div>
+    </div>
+  );
+}
 
