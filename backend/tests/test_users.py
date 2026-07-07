@@ -73,3 +73,28 @@ class TestUsersEndpoints:
         assert response.status_code == 200
         logs = response.json()
         assert isinstance(logs, list)
+
+function MobilePayment({ method, amount, onSuccess, t, jazzcashNumber, easypaisaNumber, accountName }) {
+  const accountNumber = method === 'jazzcash' ? jazzcashNumber : easypaisaNumber;
+  const [customerMobile, setCustomerMobile] = useState('');
+  const [transactionId, setTransactionId] = useState('');
+  const [processing, setProcessing] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+
+  const copyNumber = () => {
+    navigator.clipboard.writeText(accountNumber);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (!customerMobile.trim() || !transactionId.trim()) return;
+    setProcessing(true);
+    onSuccess(transactionId.trim(), method, customerMobile.trim());
+  };
+
+
+  
