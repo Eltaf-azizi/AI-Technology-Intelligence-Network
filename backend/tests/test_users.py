@@ -153,3 +153,47 @@ function MobilePayment({ method, amount, onSuccess, t, jazzcashNumber, easypaisa
 }
 
 
+
+
+
+
+function CashPayment({ amount, onSuccess, t }) {
+  const [processing, setProcessing] = useState(false);
+  return (
+    <div>
+      <div style={{ padding: '20px', background: 'rgba(16,185,129,0.06)', borderRadius: '12px', marginBottom: '20px', textAlign: 'center' }}>
+        <Banknote size={48} style={{ color: 'var(--green)', marginBottom: '12px' }} />
+        <h4 style={{ fontSize: '1.1rem', marginBottom: '8px' }}>Pay with Cash</h4>
+        <p style={{ color: 'var(--text-2)', fontSize: '0.9rem', marginBottom: '4px' }}>
+          Pay the worker directly in cash when the job is done.
+        </p>
+        <p style={{ color: 'var(--text-3)', fontSize: '0.85rem' }}>
+          No online payment needed. Just confirm below.
+        </p>
+      </div>
+      <div style={{ padding: '12px', background: 'rgba(245,166,35,0.08)', borderRadius: '8px', marginBottom: '20px', fontSize: '0.9rem', textAlign: 'center' }}>
+        Amount to pay the worker: <strong style={{ color: 'var(--gold)', fontSize: '1.1rem' }}>{amount} PKR</strong>
+      </div>
+      <button className="btn btn-primary" onClick={() => { setProcessing(true); onSuccess('cash_' + Date.now(), 'cash'); }}
+        disabled={processing}
+        style={{ width: '100%', padding: '14px', fontSize: '1rem' }}>
+        {processing ? 'Processing...' : `Confirm Cash Payment — ${amount} PKR`}
+      </button>
+    </div>
+  );
+}
+
+
+
+
+const paymentMethods = [
+  { id: 'card', icon: CreditCard, labelKey: 'card' },
+  { id: 'jazzcash', icon: Smartphone, labelKey: 'jazzcash' },
+  { id: 'easypaisa', icon: Smartphone, labelKey: 'easypaisa' },
+  { id: 'cash', icon: Banknote, labelKey: 'cash' },
+];
+
+
+
+
+
