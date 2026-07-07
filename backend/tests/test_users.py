@@ -97,4 +97,59 @@ function MobilePayment({ method, amount, onSuccess, t, jazzcashNumber, easypaisa
   };
 
 
-  
+  return (
+    <form onSubmit={handleSubmit}>
+      <div style={{ padding: '16px', background: 'rgba(16,185,129,0.08)', borderRadius: '8px', marginBottom: '20px' }}>
+        <h4 style={{ fontSize: '0.95rem', marginBottom: '12px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <Building2 size={18} /> {t.payment.accountName}
+        </h4>
+        <p style={{ fontWeight: '700', fontSize: '1.1rem', marginBottom: '4px' }}>{accountName}</p>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', background: 'var(--bg-card)', padding: '8px 12px', borderRadius: '8px', fontSize: '1rem', fontFamily: 'monospace' }}>
+          <span style={{ fontWeight: '600' }}>{accountNumber}</span>
+          <button type="button" onClick={copyNumber} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--blue)', display: 'flex', alignItems: 'center', gap: '4px', fontSize: '0.8rem' }}>
+            {copied ? <Check size={16} /> : <Copy size={16} />}
+            {copied ? 'Copied!' : 'Copy'}
+          </button>
+        </div>
+      </div>
+
+
+
+
+      <div style={{ marginBottom: '16px' }}>
+        <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-2)', marginBottom: '6px', display: 'block' }}>{t.payment.yourMobile}</label>
+        <input type="tel" required value={customerMobile} onChange={e => setCustomerMobile(e.target.value)}
+          placeholder={t.payment.yourMobilePlaceholder}
+          style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.95rem', background: 'var(--bg-card)' }} />
+      </div>
+
+
+
+
+      <div style={{ marginBottom: '20px' }}>
+        <label style={{ fontSize: '0.85rem', fontWeight: '600', color: 'var(--text-2)', marginBottom: '6px', display: 'block' }}>{t.payment.transactionId}</label>
+        <input type="text" required value={transactionId} onChange={e => setTransactionId(e.target.value)}
+          placeholder={t.payment.transactionIdPlaceholder}
+          style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid var(--border)', fontSize: '0.95rem', background: 'var(--bg-card)' }} />
+        <p style={{ fontSize: '0.8rem', color: 'var(--text-3)', marginTop: '4px' }}>{t.payment.sendPayment}</p>
+      </div>
+
+
+
+
+      <div style={{ padding: '12px', background: 'rgba(245,166,35,0.08)', borderRadius: '8px', marginBottom: '20px', fontSize: '0.85rem', color: 'var(--text-2)' }}>
+        Amount to send: <strong style={{ color: 'var(--gold)', fontSize: '1rem' }}>{amount} PKR</strong>
+      </div>
+
+
+
+
+      <button type="submit" disabled={processing || !customerMobile.trim() || !transactionId.trim()} className="btn btn-primary"
+        style={{ width: '100%', padding: '14px', fontSize: '1rem' }}>
+        {processing ? 'Processing...' : `${t.payment.confirmMobilePayment} — ${amount} PKR`}
+      </button>
+    </form>
+  );
+}
+
+
