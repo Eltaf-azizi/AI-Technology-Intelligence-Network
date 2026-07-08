@@ -1,0 +1,33 @@
+services:
+  backend:
+    build:
+      context: .
+      target: backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./data/atin.db
+      - SECRET_KEY=change-this-in-production
+      - CORS_ORIGINS=["http://localhost:3000"]
+    volumes:
+      - atin-data:/app/data
+    healthcheck:
+      test: ["GET", "/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  frontend:
+    build:
+      context: .
+      target: frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8000/api
+    depends_on:
+      backend:
+        condition: service_healthy
+
+volumes:
+  atin-data:
