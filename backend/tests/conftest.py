@@ -5,10 +5,11 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), ".."))
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 from sqlalchemy.pool import StaticPool
 
 from app.database import Base, get_db
+from app.core.rate_limit import limiter
 from main import app
 
 TEST_DATABASE_URL = "sqlite:///:memory:"
@@ -41,19 +42,20 @@ def client():
 
 @pytest.fixture
 def auth_headers(client):
-    resp = client.post("/api/auth/register", json={"username": "testuser", "email": "test@example.com", "password": "testpass123"})
+    resp = client.post("/api/auth/register", json={"username": "testuser99", "email": "test99@example.com", "password": "testpass123"})
     token = resp.json()["access_token"]
     return {"Authorization": f"Bearer {token}"}
 
 
 @pytest.fixture
 def seeded_db():
-    db = TestingSessionLocal()
+    """Returns a session with seeded data."""
+    session = TestingSessionLocal()
     from app.seed import seed_database
     Base.metadata.create_all(bind=engine)
-    seed_database(db)
-    db.close()
-    return TestingSessionLocal
+    seed_database(session)
+    session.close()
+    return TestingSessionLocal()
 
 
 @pytest.fixture

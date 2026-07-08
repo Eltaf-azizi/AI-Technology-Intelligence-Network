@@ -51,3 +51,9 @@ class CareerAgent:
                 techs.append({"name": t.name, "difficulty": t.difficulty, "time": t.learning_time})
         return {"career": career.title, "demand": career.demand, "salary_range": career.salary_range,
                 "estimated_time": career.estimated_time, "technologies_to_learn": techs}
+
+    @staticmethod
+    def get_market_demand(db: Session) -> list:
+        careers = db.query(Career).all()
+        return [{"title": c.title, "demand": c.demand, "growth": c.growth,
+                 "salary_range": c.salary_range} for c in careers]

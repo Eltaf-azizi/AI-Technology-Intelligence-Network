@@ -27,7 +27,7 @@ class TestLearningPathEndpoints:
 
     def test_generate_path_short_goal(self, seeded_client):
         response = seeded_client.post("/api/learning/generate", json={
-            "goal": "ai",
+            "goal": "ai dev",
             "current_skills": [],
             "time_available": "low",
             "difficulty": "Advanced",

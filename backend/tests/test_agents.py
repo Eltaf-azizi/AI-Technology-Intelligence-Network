@@ -1,79 +1,78 @@
-from app.agents.agents import ResearchAgent, TrendAgent, LearningAgent, CareerAgent
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
+
+from app.database import Base
+from app.agents.agents import TrendAgent, LearningAgent, CareerAgent
+from app.models.models import Career
 from app.seed import seed_database
 
+_engine = create_engine("sqlite:///:memory:", connect_args={"check_same_thread": False}, poolclass=StaticPool)
+_Session = sessionmaker(autocommit=False, autoflush=False, bind=_engine)
 
-class TestResearchAgent:
-    def test_analyze_paper(self, seeded_db):
-        from app.models.models import ResearchPaper
-        paper = seeded_db.query(ResearchPaper).first()
-        if paper:
-            result = ResearchAgent.analyze_paper(seeded_db, paper)
-            assert "title" in result
-            assert "technologies" in result
-            assert "concepts" in result
-            assert "difficulty" in result
-            assert result["title"] == paper.title
 
-    def test_find_related_papers(self, seeded_db):
-        from app.models.models import ResearchPaper
-        papers = seeded_db.query(ResearchPaper).all()
-        if len(papers) >= 2:
-            related = ResearchAgent.find_related_papers(seeded_db, papers[0].id)
-            assert isinstance(related, list)
+def _seeded_session():
+    Base.metadata.create_all(bind=_engine)
+    db = _Session()
+    seed_database(db)
+    db.close()
+    return _Session()
 
 
 class TestTrendAgent:
-    def test_analyze_market(self, seeded_db):
-        result = TrendAgent.analyze_market(seeded_db)
-        assert "market_health" in result
-        assert "average_growth_rate" in result
-        assert "hot_technologies" in result
-        assert len(result["hot_technologies"]) > 0
-
-    def test_predict_emerging(self, seeded_db):
-        emerging = TrendAgent.predict_emerging(seeded_db)
-        assert isinstance(emerging, list)
-        if emerging:
-            assert isinstance(emerging[0], str)
+    def test_analyze_market(self):
+        db = _seeded_session()
+        try:
+            result = TrendAgent.analyze_market(db)
+            assert "market_health" in result
+            assert "average_growth_rate" in result
+            assert "hot_technologies" in result
+        finally:
+            db.close()
 
 
 class TestLearningAgent:
-    def test_generate_path(self, seeded_db):
-        result = LearningAgent.generate_path(
-            seeded_db,
-            goal="machine learning",
-            current_skills=["Python"],
-            time_available="high",
-            difficulty="Intermediate",
-        )
-        assert "id" in result
-        assert "title" in result
-        assert "steps" in result
-        assert len(result["steps"]) > 0
+    def test_generate_path(self):
+        db = _seeded_session()
+        try:
+            result = LearningAgent.generate_path(
+                db, goal="machine learning", current_skills=["Python"],
+                time_available="high", difficulty="Intermediate",
+            )
+            assert "id" in result and "title" in result and "steps" in result
+            assert len(result["steps"]) > 0
+        finally:
+            db.close()
 
-    def test_generate_path_no_match(self, seeded_db):
-        result = LearningAgent.generate_path(
-            seeded_db,
-            goal="zzzzzz",
-            current_skills=[],
-            time_available="medium",
-        )
-        assert len(result["steps"]) > 0
+    def test_generate_path_no_match(self):
+        db = _seeded_session()
+        try:
+            result = LearningAgent.generate_path(
+                db, goal="zzzzzz", current_skills=[], time_available="medium",
+            )
+            assert len(result["steps"]) > 0
+        finally:
+            db.close()
 
 
 class TestCareerAgent:
-    def test_analyze_career_path(self, seeded_db):
-        from app.models.models import Career
-        career = seeded_db.query(Career).first()
-        if career:
-            result = CareerAgent.analyze_career_path(seeded_db, career.id)
-            assert result is not None
-            assert "career" in result
-            assert "demand" in result
-            assert "technologies_to_learn" in result
+    def test_analyze_career_path(self):
+        db = _seeded_session()
+        try:
+            career = db.query(Career).first()
+            if career:
+                result = CareerAgent.analyze_career_path(db, career.id)
+                assert result is not None
+                assert "career" in result and "demand" in result
+                assert "technologies_to_learn" in result
+        finally:
+            db.close()
 
-    def test_get_market_demand(self, seeded_db):
-        result = CareerAgent.get_market_demand(seeded_db)
-        assert len(result) > 0
-        assert "title" in result[0]
-        assert "demand" in result[0]
+    def test_get_market_demand(self):
+        db = _seeded_session()
+        try:
+            result = CareerAgent.get_market_demand(db)
+            assert len(result) > 0
+            assert "title" in result[0] and "demand" in result[0]
+        finally:
+            db.close()

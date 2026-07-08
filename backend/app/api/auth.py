@@ -4,14 +4,14 @@ from app.database import get_db
 from app.models.models import User
 from app.schemas.schemas import UserCreate, UserLogin, TokenResponse, RefreshRequest
 from app.core.security import get_password_hash, verify_password, create_access_token, create_refresh_token, decode_token, get_current_user_id
-from app.core.rate_limit import limiter
+from app.core.rate_limit import limiter, limit
 from app.services.knowledge_graph import AuditService
 
 router = APIRouter(tags=["auth"])
 
 
 @router.post("/register", response_model=TokenResponse)
-@limiter.limit("5/minute")
+@limit("5/minute")
 async def register(request: Request, user_data: UserCreate, db: Session = Depends(get_db)):
     if db.query(User).filter((User.username == user_data.username) | (User.email == user_data.email)).first():
         raise HTTPException(status_code=400, detail="Username or email already exists")
@@ -23,7 +23,7 @@ async def register(request: Request, user_data: UserCreate, db: Session = Depend
 
 
 @router.post("/login", response_model=TokenResponse)
-@limiter.limit("10/minute")
+@limit("10/minute")
 async def login(request: Request, creds: UserLogin, db: Session = Depends(get_db)):
     user = db.query(User).filter(User.username == creds.username).first()
     if not user or not verify_password(creds.password, user.hashed_password):

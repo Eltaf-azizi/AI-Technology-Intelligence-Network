@@ -2,12 +2,11 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useAuth } from "@/lib/auth-context";
 import {
   Radar, BookOpen, Brain, Route, Globe, Briefcase,
-  BarChart3, Search, Shield, GitCompare, FileText
+  BarChart3, Search, Shield, GitCompare, FileText, LogIn, User
 } from "lucide-react";
-
-const research = { href: "/research", label: "Research Papers", icon: FileText };
 import { cn } from "@/lib/utils";
 
 const navItems = [
@@ -25,6 +24,7 @@ const navItems = [
 
 export function Sidebar() {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   return (
     <aside className="hidden lg:flex w-64 flex-col border-r border-atin-border bg-atin-bg2">
@@ -60,11 +60,29 @@ export function Sidebar() {
         })}
       </nav>
 
-      <div className="border-t border-atin-border p-4">
-        <div className="flex items-center gap-3 rounded-lg bg-atin-surface p-3">
-          <Shield size={16} className="text-atin-green" />
-          <span className="text-xs text-atin-muted">Secure Connection</span>
-        </div>
+      <div className="border-t border-atin-border p-4 space-y-2">
+        {user ? (
+          <div className="space-y-2">
+            <div className="flex items-center gap-3 rounded-lg bg-atin-surface p-3">
+              <User size={16} className="text-atin-accent" />
+              <div className="min-w-0 flex-1">
+                <span className="block text-xs text-white truncate">{user.username}</span>
+                <span className="block text-[10px] text-atin-muted truncate">{user.email}</span>
+              </div>
+            </div>
+            <button onClick={logout}
+              className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-xs text-atin-muted hover:bg-atin-surface hover:text-atin-text transition-all">
+              <LogIn size={14} className="rotate-180" />
+              Sign out
+            </button>
+          </div>
+        ) : (
+          <Link href="/login"
+            className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm text-atin-muted hover:bg-atin-surface hover:text-atin-text transition-all">
+            <LogIn size={18} />
+            Sign in
+          </Link>
+        )}
       </div>
     </aside>
   );
