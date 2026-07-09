@@ -16,16 +16,18 @@ def test_technologies_endpoint():
     response = client.get("/api/technologies")
     assert response.status_code == 200
     data = response.json()
-    assert isinstance(data, list)
-    assert data
+    assert isinstance(data, dict)
+    assert data["total"] >= 0
+    assert "technologies" in data
 
 
 def test_careers_endpoint():
     response = client.get("/api/careers")
     assert response.status_code == 200
     data = response.json()
-    assert isinstance(data, list)
-    assert data
+    assert isinstance(data, dict)
+    assert data["total"] >= 0
+    assert "careers" in data
 
 
 def test_mentor_chat_endpoint():
