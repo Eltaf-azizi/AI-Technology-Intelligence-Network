@@ -1,16 +1,17 @@
 import os
 import sys
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, Request
+from fastapi import Depends, FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
+from sqlalchemy.orm import Session
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 
 from app.config import settings
-from app.database import init_db, SessionLocal
+from app.database import init_db, SessionLocal, get_db
 from app.seed import seed_database
 from app.core.logger import logger
 from app.core.rate_limit import limiter
@@ -74,14 +75,10 @@ async def log_requests(request: Request, call_next):
 
 
 @app.get("/api/health")
-async def health_check():
+async def health_check(db: Session = Depends(get_db)):
     from app.models.models import Technology, Relationship
-    db = SessionLocal()
-    try:
-        tech_count = db.query(Technology).count()
-        rel_count = db.query(Relationship).count()
-    finally:
-        db.close()
+    tech_count = db.query(Technology).count()
+    rel_count = db.query(Relationship).count()
     return {
         "status": "online",
         "version": settings.VERSION,

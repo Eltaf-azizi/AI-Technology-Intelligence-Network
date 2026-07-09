@@ -8,10 +8,11 @@ from app.services.knowledge_graph import TechnologyService
 router = APIRouter(tags=["technologies"])
 
 
-@router.get("/technologies", response_model=TechnologyList)
+@router.get("/technologies")
 async def list_technologies(category: Optional[str] = Query(None), page: int = Query(1, ge=1), per_page: int = Query(50, ge=1, le=100), db: Session = Depends(get_db)):
     skip = (page - 1) * per_page
-    return TechnologyList(technologies=TechnologyService.get_all(db, category=category, skip=skip, limit=per_page), total=TechnologyService.count(db, category=category), page=page, per_page=per_page)
+    items = TechnologyService.get_all(db, category=category, skip=skip, limit=per_page)
+    return {"technologies": items, "total": TechnologyService.count(db, category=category), "page": page, "per_page": per_page}
 
 
 @router.get("/technologies/{slug}", response_model=TechnologyResponse)

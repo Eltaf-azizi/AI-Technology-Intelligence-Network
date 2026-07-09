@@ -11,7 +11,7 @@ ms = MentorService()
 @router.post("/mentor/chat", response_model=MentorChatResponse)
 async def chat_with_mentor(req: MentorChatRequest, db: Session = Depends(get_db)):
     result = ms.chat(req.message, [{"role": m.role, "content": m.content} for m in req.history])
-    return MentorChatResponse(reply=result["reply"], suggestions=result["suggestions"])
+    return MentorChatResponse(reply=result["reply"], response=result["reply"], suggestions=result["suggestions"])
 
 
 @router.get("/mentor/suggestions")

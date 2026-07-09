@@ -7,10 +7,10 @@ from app.services.knowledge_graph import CareerService
 router = APIRouter(tags=["careers"])
 
 
-@router.get("/careers", response_model=CareerList)
+@router.get("/careers")
 async def list_careers(db: Session = Depends(get_db)):
     careers = CareerService.get_all(db)
-    return CareerList(careers=careers, total=len(careers))
+    return {"careers": careers, "total": len(careers)}
 
 
 @router.get("/careers/{career_id}", response_model=CareerResponse)

@@ -146,6 +146,7 @@ class MentorChatRequest(BaseModel):
 
 class MentorChatResponse(BaseModel):
     reply: str
+    response: str
     suggestions: List[str] = []
 
 

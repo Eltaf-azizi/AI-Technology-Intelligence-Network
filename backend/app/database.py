@@ -27,7 +27,20 @@ def init_db():
     Base.metadata.create_all(bind=engine)
 
 
+def ensure_db_ready():
+    init_db()
+    from app.models.models import Technology
+    from app.seed import seed_database
+    db = SessionLocal()
+    try:
+        if db.query(Technology).count() == 0:
+            seed_database(db)
+    finally:
+        db.close()
+
+
 def get_db():
+    ensure_db_ready()
     db = SessionLocal()
     try:
         yield db
