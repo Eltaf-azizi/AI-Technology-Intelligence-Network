@@ -139,3 +139,64 @@ describe('Authentication Endpoints', () => {
   });
 });
 
+describe('News Endpoints', () => {
+  let authToken;
+
+  beforeEach(async () => {
+    if (!db) return;
+    const hashedPassword = await bcrypt.hash('TestPass123!', 12);
+    const result = await db.collection('users').insertOne({
+      email: 'newsuser@atin.dev',
+      password: hashedPassword,
+      name: 'News User',
+      role: 'user',
+      isActive: true,
+      preferences: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const jwt = require('jsonwebtoken');
+    authToken = jwt.sign(
+      { userId: result.insertedId.toString(), role: 'user' },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' },
+    );
+
+    await db.collection('news').insertMany([
+      {
+        title: 'Test Article 1',
+        source: 'TestSource',
+        sentiment: 'positive',
+        sentimentScore: 0.8,
+        url: 'https://example.com/1',
+        publishedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        title: 'Test Article 2',
+        source: 'TestSource',
+        sentiment: 'negative',
+        sentimentScore: -0.6,
+        url: 'https://example.com/2',
+        publishedAt: new Date(),
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
+  });
+
+  it('should list news articles', async () => {
+    const res = await request(app)
+      .get('/api/news')
+      .set('Authorization', `Bearer ${authToken}`)
+      .expect(200);
+
+    expect(Array.isArray(res.body.news || res.body.articles || res.body)).toBe(true);
+  });
+
+  it('should require authentication', async () => {
+    await request(app).get('/api/news').expect(401);
+  });
+});
