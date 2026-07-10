@@ -200,3 +200,125 @@ describe('News Endpoints', () => {
     await request(app).get('/api/news').expect(401);
   });
 });
+
+describe('Trends Endpoints', () => {
+  let authToken;
+
+  beforeEach(async () => {
+    if (!db) return;
+    const hashedPassword = await bcrypt.hash('TestPass123!', 12);
+    const result = await db.collection('users').insertOne({
+      email: 'trenduser@atin.dev',
+      password: hashedPassword,
+      name: 'Trend User',
+      role: 'user',
+      isActive: true,
+      preferences: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const jwt = require('jsonwebtoken');
+    authToken = jwt.sign(
+      { userId: result.insertedId.toString(), role: 'user' },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' },
+    );
+
+    await db.collection('technologies').insertMany([
+      {
+        name: 'GPT-5',
+        category: 'LLM',
+        description: 'Next-gen model',
+        maturity: 'emerging',
+        score: 95,
+        trending: true,
+        history: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: 'Edge AI',
+        category: 'Hardware',
+        description: 'On-device AI',
+        maturity: 'growth',
+        score: 82,
+        trending: true,
+        history: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
+  });
+
+  it('should list trends', async () => {
+    const res = await request(app)
+      .get('/api/trends')
+      .set('Authorization', `Bearer ${authToken}`)
+      .expect(200);
+
+    expect(Array.isArray(res.body.trends || res.body.technologies || res.body)).toBe(true);
+  });
+});
+
+describe('Admin-Only Routes', () => {
+  let adminToken;
+  let userToken;
+
+  beforeEach(async () => {
+    if (!db) return;
+    const hashedPassword = await bcrypt.hash('AdminPass123!', 12);
+
+    const adminResult = await db.collection('users').insertOne({
+      email: 'admin@atin.dev',
+      password: hashedPassword,
+      name: 'Admin',
+      role: 'admin',
+      isActive: true,
+      preferences: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const userResult = await db.collection('users').insertOne({
+      email: 'regular@atin.dev',
+      password: hashedPassword,
+      name: 'Regular',
+      role: 'user',
+      isActive: true,
+      preferences: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const jwt = require('jsonwebtoken');
+    adminToken = jwt.sign(
+      { userId: adminResult.insertedId.toString(), role: 'admin' },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' },
+    );
+    userToken = jwt.sign(
+      { userId: userResult.insertedId.toString(), role: 'user' },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' },
+    );
+  });
+
+  it('should allow admin access to admin routes', async () => {
+    const res = await request(app)
+      .get('/api/users')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(200);
+
+    expect(res.status).toBe(200);
+  });
+
+  it('should deny regular user access to admin routes', async () => {
+    const res = await request(app)
+      .get('/api/users')
+      .set('Authorization', `Bearer ${userToken}`)
+      .expect(403);
+
+    expect(res.body).toHaveProperty('error');
+  });
+});
