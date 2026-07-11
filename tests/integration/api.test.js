@@ -200,3 +200,55 @@ describe('News Endpoints', () => {
     await request(app).get('/api/news').expect(401);
   });
 });
+
+describe('Trends Endpoints', () => {
+  let authToken;
+
+  beforeEach(async () => {
+    if (!db) return;
+    const hashedPassword = await bcrypt.hash('TestPass123!', 12);
+    const result = await db.collection('users').insertOne({
+      email: 'trenduser@atin.dev',
+      password: hashedPassword,
+      name: 'Trend User',
+      role: 'user',
+      isActive: true,
+      preferences: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const jwt = require('jsonwebtoken');
+    authToken = jwt.sign(
+      { userId: result.insertedId.toString(), role: 'user' },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' },
+    );
+
+    await db.collection('technologies').insertMany([
+      {
+        name: 'GPT-5',
+        category: 'LLM',
+        description: 'Next-gen model',
+        maturity: 'emerging',
+        score: 95,
+        trending: true,
+        history: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+      {
+        name: 'Edge AI',
+        category: 'Hardware',
+        description: 'On-device AI',
+        maturity: 'growth',
+        score: 82,
+        trending: true,
+        history: [],
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ]);
+  });
+
+  
