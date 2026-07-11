@@ -93,4 +93,49 @@ describe('Authentication Endpoints', () => {
     });
   });
 
-  
+  describe('POST /api/auth/login', () => {
+    beforeEach(async () => {
+      const hashedPassword = await bcrypt.hash(testUser.password, 12);
+      if (db) {
+        await db.collection('users').insertOne({
+          email: testUser.email,
+          password: hashedPassword,
+          name: testUser.name,
+          role: 'user',
+          isActive: true,
+          preferences: { theme: 'dark' },
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        });
+      }
+    });
+
+    it('should login with valid credentials', async () => {
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ email: testUser.email, password: testUser.password })
+        .expect(200);
+
+      expect(res.body).toHaveProperty('token');
+      expect(res.body).toHaveProperty('refreshToken');
+      expect(res.body.user.email).toBe(testUser.email);
+    });
+
+    it('should reject wrong password', async () => {
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ email: testUser.email, password: 'wrongpassword' })
+        .expect(401);
+
+      expect(res.body).toHaveProperty('error');
+    });
+
+    it('should reject non-existent user', async () => {
+      const res = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'nobody@atin.dev', password: 'password' })
+        .expect(401);
+    });
+  });
+});
+
