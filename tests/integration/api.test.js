@@ -251,4 +251,28 @@ describe('Trends Endpoints', () => {
     ]);
   });
 
+  it('should list trends', async () => {
+    const res = await request(app)
+      .get('/api/trends')
+      .set('Authorization', `Bearer ${authToken}`)
+      .expect(200);
+
+    expect(Array.isArray(res.body.trends || res.body.technologies || res.body)).toBe(true);
+  });
+});
+
+describe('Admin-Only Routes', () => {
+  let adminToken;
+  let userToken;
+
   
+
+  it('should deny regular user access to admin routes', async () => {
+    const res = await request(app)
+      .get('/api/users')
+      .set('Authorization', `Bearer ${userToken}`)
+      .expect(403);
+
+    expect(res.body).toHaveProperty('error');
+  });
+});
