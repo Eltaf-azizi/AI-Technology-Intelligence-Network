@@ -265,7 +265,53 @@ describe('Admin-Only Routes', () => {
   let adminToken;
   let userToken;
 
-  
+  beforeEach(async () => {
+    if (!db) return;
+    const hashedPassword = await bcrypt.hash('AdminPass123!', 12);
+
+    const adminResult = await db.collection('users').insertOne({
+      email: 'admin@atin.dev',
+      password: hashedPassword,
+      name: 'Admin',
+      role: 'admin',
+      isActive: true,
+      preferences: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const userResult = await db.collection('users').insertOne({
+      email: 'regular@atin.dev',
+      password: hashedPassword,
+      name: 'Regular',
+      role: 'user',
+      isActive: true,
+      preferences: {},
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+
+    const jwt = require('jsonwebtoken');
+    adminToken = jwt.sign(
+      { userId: adminResult.insertedId.toString(), role: 'admin' },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' },
+    );
+    userToken = jwt.sign(
+      { userId: userResult.insertedId.toString(), role: 'user' },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' },
+    );
+  });
+
+  it('should allow admin access to admin routes', async () => {
+    const res = await request(app)
+      .get('/api/users')
+      .set('Authorization', `Bearer ${adminToken}`)
+      .expect(200);
+
+    expect(res.status).toBe(200);
+  });
 
   it('should deny regular user access to admin routes', async () => {
     const res = await request(app)
