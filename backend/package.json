@@ -1,0 +1,38 @@
+{
+  "name": "atin-backend",
+  "version": "2.0.0",
+  "description": "AI Technology Intelligence Network - Backend API",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "lint": "eslint src/"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "mongoose": "^8.8.0",
+    "bcryptjs": "^2.4.3",
+    "jsonwebtoken": "^9.0.2",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "cors": "^2.8.5",
+    "helmet": "^8.0.0",
+    "morgan": "^1.10.0",
+    "dotenv": "^16.4.5",
+    "express-rate-limit": "^7.4.1",
+    "express-validator": "^7.2.0",
+    "ioredis": "^5.4.1",
+    "nodemailer": "^6.9.16",
+    "cheerio": "^1.0.0",
+    "axios": "^1.7.7",
+    "winston": "^3.15.0",
+    "socket.io": "^4.8.1",
+    "node-cron": "^3.0.3",
+    "ws": "^8.18.0",
+    "uuid": "^10.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^3.1.7",
+    "eslint": "^9.14.0"
+  }
+}
