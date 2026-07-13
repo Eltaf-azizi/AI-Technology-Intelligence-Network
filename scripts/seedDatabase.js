@@ -111,3 +111,91 @@ const NOTIFICATION_TEMPLATES = [
   { name: 'comment_reply', subject: 'New Reply to Your Comment', body: '{{user}} replied: {{excerpt}}', type: 'social' },
   { name: 'article_curated', subject: 'New Article for You', body: '{{title}} matches your interests.', type: 'recommendation' },
 ];
+
+async function seedDatabase() {
+  const client = new MongoClient(MONGODB_URI);
+
+  try {
+    await client.connect();
+    const db = client.db();
+
+    console.log('Dropping existing collections...');
+    const collections = await db.listCollections().toArray();
+    for (const col of collections) {
+      await db.dropCollection(col.name);
+    }
+
+    console.log('Seeding users...');
+    const users = [];
+    for (const userData of USERS) {
+      const hashedPassword = await bcrypt.hash(userData.password, 12);
+      users.push({
+        ...userData,
+        password: hashedPassword,
+        isActive: true,
+        createdAt: new Date(Date.now() - Math.random() * 90 * 24 * 60 * 60 * 1000),
+        updatedAt: new Date(),
+      });
+    }
+    const userResult = await db.collection('users').insertMany(users);
+    const userIds = Object.values(userResult.insertedIds);
+
+    console.log('Seeding technologies...');
+    const techDocs = TECHNOLOGIES.map((tech, i) => ({
+      ...tech,
+      addedBy: userIds[i % userIds.length],
+      trending: tech.score > 80,
+      history: Array.from({ length: 30 }, (_, j) => ({
+        date: new Date(Date.now() - (29 - j) * 24 * 60 * 60 * 1000),
+        score: Math.floor(tech.score + (Math.random() - 0.5) * 20),
+      })),
+      createdAt: new Date(Date.now() - Math.random() * 180 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(),
+    }));
+    const techResult = await db.collection('technologies').insertMany(techDocs);
+    const techIds = Object.values(techResult.insertedIds);
+
+    console.log('Seeding news articles...');
+    const newsDocs = NEWS_ARTICLES.map((article, i) => ({
+      ...article,
+      url: `https://example.com/news/${i + 1}`,
+      description: `Detailed coverage of: ${article.title}`,
+      author: `Reporter ${String.fromCharCode(65 + (i % 26))}`,
+      technologyId: techIds[i % techIds.length],
+      publishedAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
+      createdAt: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000),
+      updatedAt: new Date(),
+    }));
+    await db.collection('news').insertMany(newsDocs);
+
+    console.log('Seeding notification templates...');
+    const templateDocs = NOTIFICATION_TEMPLATES.map((tpl) => ({
+      ...tpl,
+      isActive: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }));
+    await db.collection('notificationtemplates').insertMany(templateDocs);
+
+    console.log('Creating indexes...');
+    await db.collection('users').createIndex({ email: 1 }, { unique: true });
+    await db.collection('news').createIndex({ sentiment: 1 });
+    await db.collection('news').createIndex({ technologyId: 1 });
+    await db.collection('news').createIndex({ publishedAt: -1 });
+    await db.collection('technologies').createIndex({ category: 1 });
+    await db.collection('technologies').createIndex({ score: -1 });
+
+    console.log('Seed completed successfully!');
+    console.log(`  Users: ${users.length}`);
+    console.log(`  Technologies: ${techDocs.length}`);
+    console.log(`  News articles: ${newsDocs.length}`);
+    console.log(`  Notification templates: ${templateDocs.length}`);
+  } catch (err) {
+    console.error('Seed failed:', err.message);
+    process.exitCode = 1;
+  } finally {
+    await client.close();
+  }
+}
+
+seedDatabase();
