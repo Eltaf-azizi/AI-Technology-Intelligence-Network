@@ -443,3 +443,148 @@ All requests should include `Content-Type: application/json`. Protected routes r
 ```
 
 ---
+
+### Delete Notification
+
+`DELETE /notifications/:id`
+
+🔒 **Auth required**
+
+**Response (200):**
+```json
+{
+  "message": "Notification deleted"
+}
+```
+
+---
+
+## Users
+
+### Get Profile
+
+`GET /users/profile`
+
+🔒 **Auth required**
+
+**Response (200):**
+```json
+{
+  "user": {
+    "id": "665f1a2b3c4d5e6f7a8b9c0d",
+    "email": "user@example.com",
+    "name": "Jane Doe",
+    "role": "user",
+    "preferences": {
+      "theme": "dark",
+      "emailNotifications": true
+    }
+  }
+}
+```
+
+---
+
+### Update Profile
+
+`PATCH /users/profile`
+
+🔒 **Auth required**
+
+**Body:**
+```json
+{
+  "name": "Jane Smith"
+}
+```
+
+**Response (200):** Updated user object.
+
+---
+
+### Get Preferences
+
+`GET /users/preferences`
+
+🔒 **Auth required**
+
+**Response (200):**
+```json
+{
+  "preferences": {
+    "theme": "dark",
+    "emailNotifications": true,
+    "pushNotifications": false,
+    "digestFrequency": "daily"
+  }
+}
+```
+
+---
+
+### Update Preferences
+
+`PATCH /users/preferences`
+
+🔒 **Auth required**
+
+**Body:**
+```json
+{
+  "theme": "light",
+  "emailNotifications": false
+}
+```
+
+**Response (200):** Updated preferences object.
+
+---
+
+### Deactivate Account
+
+`DELETE /users/account`
+
+🔒 **Auth required**
+
+**Response (200):**
+```json
+{
+  "message": "Account deactivated successfully"
+}
+```
+
+---
+
+### Get Activity
+
+`GET /users/activity`
+
+🔒 **Auth required**
+
+**Response (200):**
+```json
+{
+  "activities": [
+    {
+      "type": "login",
+      "description": "Logged in from Chrome on Windows",
+      "timestamp": "2024-06-15T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+## Health Check
+
+`GET /health`
+
+**Response (200):**
+```json
+{
+  "status": "healthy",
+  "uptime": 12345,
+  "timestamp": "2024-06-15T10:00:00.000Z"
+}
+```
