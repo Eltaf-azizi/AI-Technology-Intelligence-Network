@@ -220,3 +220,101 @@ All requests should include `Content-Type: application/json`. Protected routes r
 
 ---
 
+### Get Technology
+
+`GET /trends/:id`
+
+🔒 **Auth required**
+
+**Response (200):** Single technology object with full history.
+
+**Errors:** 404 (not found)
+
+---
+
+### Add Technology
+
+`POST /trends`
+
+🔒 **Auth required**
+
+**Body:**
+```json
+{
+  "name": "NewTech",
+  "category": "Frameworks",
+  "description": "A new framework",
+  "maturity": "emerging"
+}
+```
+
+**Response (201):** Created technology object.
+
+---
+
+### Update Technology
+
+`PATCH /trends/:id`
+
+🔒 **Auth required**
+
+**Body:**
+```json
+{
+  "score": 92,
+  "description": "Updated description"
+}
+```
+
+**Response (200):** Updated technology object.
+
+---
+
+### Delete Technology
+
+`DELETE /trends/:id`
+
+🔒 **Auth required** (admin)
+
+**Response (200):**
+```json
+{
+  "message": "Technology deleted successfully"
+}
+```
+
+**Errors:** 403 (not admin), 404 (not found)
+
+---
+
+## Sentiment
+
+### Get Sentiment Analysis
+
+`GET /sentiment/analysis`
+
+🔒 **Auth required**
+
+**Query Parameters:**
+- `technologyId` (string)
+- `dateFrom` (ISO date string)
+- `dateTo` (ISO date string)
+
+**Response (200):**
+```json
+{
+  "analysis": {
+    "averageScore": 0.72,
+    "distribution": {
+      "positive": 65,
+      "neutral": 20,
+      "negative": 15
+    },
+    "trend": "improving"
+  }
+}
+```
+
+---
+
+
