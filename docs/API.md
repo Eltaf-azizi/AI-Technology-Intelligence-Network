@@ -317,4 +317,129 @@ All requests should include `Content-Type: application/json`. Protected routes r
 
 ---
 
+### Get Sentiment Over Time
 
+`GET /sentiment/timeline`
+
+🔒 **Auth required**
+
+**Query Parameters:**
+- `technologyId` (string)
+- `period` (string: `day`, `week`, `month`)
+
+**Response (200):**
+```json
+{
+  "timeline": [
+    {
+      "date": "2024-06-01",
+      "positive": 12,
+      "neutral": 5,
+      "negative": 3,
+      "averageScore": 0.65
+    }
+  ]
+}
+```
+
+---
+
+## Analytics
+
+### Get Dashboard Summary
+
+`GET /analytics/dashboard`
+
+🔒 **Auth required**
+
+**Response (200):**
+```json
+{
+  "totalTechnologies": 45,
+  "totalArticles": 1250,
+  "trendingCount": 12,
+  "sentimentOverview": {
+    "positive": 62,
+    "neutral": 25,
+    "negative": 13
+  },
+  "recentActivity": [...]
+}
+```
+
+---
+
+### Get User Analytics
+
+`GET /analytics/user`
+
+🔒 **Auth required**
+
+**Response (200):**
+```json
+{
+  "articlesRead": 34,
+  "trendsTracked": 8,
+  "loginCount": 15,
+  "lastActive": "2024-06-15T10:00:00.000Z"
+}
+```
+
+---
+
+## Notifications
+
+### List Notifications
+
+`GET /notifications`
+
+🔒 **Auth required**
+
+**Response (200):**
+```json
+{
+  "notifications": [
+    {
+      "id": "665f1a2b3c4d5e6f7a8b9c10",
+      "type": "trend_alert",
+      "title": "Trend Alert: GPT-5",
+      "message": "GPT-5 score increased by 15%",
+      "read": false,
+      "createdAt": "2024-06-15T10:00:00.000Z"
+    }
+  ]
+}
+```
+
+---
+
+### Mark as Read
+
+`PATCH /notifications/:id/read`
+
+🔒 **Auth required**
+
+**Response (200):**
+```json
+{
+  "message": "Notification marked as read"
+}
+```
+
+---
+
+### Mark All as Read
+
+`PATCH /notifications/read-all`
+
+🔒 **Auth required**
+
+**Response (200):**
+```json
+{
+  "message": "All notifications marked as read",
+  "count": 5
+}
+```
+
+---
