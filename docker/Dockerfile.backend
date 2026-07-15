@@ -1,0 +1,35 @@
+# Stage 1: Development
+FROM node:22-alpine AS dev
+
+WORKDIR /app
+
+COPY package*.json ./
+RUN npm install
+
+COPY . .
+
+EXPOSE 5000
+
+CMD ["node", "src/server.js"]
+
+# Stage 2: Production
+FROM node:22-alpine AS prod
+
+WORKDIR /app
+
+RUN addgroup -g 1001 -S atin && \
+    adduser -S atin -u 1001 -G atin
+
+COPY --from=dev /app/package*.json ./
+RUN npm ci --omit=dev && npm cache clean --force
+
+COPY --from=dev --chown=atin:atin /app/src ./src
+
+USER atin
+
+EXPOSE 5000
+
+HEALTHCHECK --interval=30s --timeout=10s --start-period=30s --retries=3 \
+  CMD wget --no-verbose --tries=1 --spider http://localhost:5000/api/health || exit 1
+
+CMD ["node", "src/server.js"]
