@@ -187,3 +187,78 @@ router.get("/growth-comparison", async (req, res, next) => {
     next(error);
   }
 });
+
+
+router.get("/report", async (req, res, next) => {
+  try {
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+    const [
+      totalNews,
+      newsThisMonth,
+      newsThisWeek,
+      trendsByStage,
+      sentimentStats,
+      topCategories,
+      topTechnologies,
+    ] = await Promise.all([
+      News.countDocuments(),
+      News.countDocuments({ publishedAt: { $gte: thirtyDaysAgo } }),
+      News.countDocuments({ publishedAt: { $gte: sevenDaysAgo } }),
+      Trend.aggregate([
+        { $group: { _id: "$stage", count: { $sum: 1 } } },
+      ]),
+      Sentiment.aggregate([
+        { $match: { analyzedAt: { $gte: thirtyDaysAgo } } },
+        {
+          $group: {
+            _id: null,
+            avgScore: { $avg: "$score" },
+            total: { $sum: 1 },
+          },
+        },
+      ]),
+      News.aggregate([
+        { $match: { publishedAt: { $gte: thirtyDaysAgo } } },
+        { $group: { _id: "$category", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 5 },
+      ]),
+      News.aggregate([
+        { $match: { publishedAt: { $gte: thirtyDaysAgo } } },
+        { $unwind: "$technologies" },
+        { $group: { _id: "$technologies", count: { $sum: 1 } } },
+        { $sort: { count: -1 } },
+        { $limit: 10 },
+      ]),
+    ]);
+
+    const sentimentData = sentimentStats[0] || { avgScore: 0, total: 0 };
+
+    const report = {
+      generatedAt: now.toISOString(),
+      period: {
+        from: thirtyDaysAgo.toISOString(),
+        to: now.toISOString(),
+      },
+      summary: {
+        totalNewsArticles: totalNews,
+        newsThisMonth: newsThisMonth,
+        newsThisWeek: newsThisWeek,
+        averageSentimentScore: parseFloat(sentimentData.avgScore.toFixed(4)) || 0,
+        totalSentimentEntries: sentimentData.total,
+      },
+      trendsByStage: trendsByStage.map((t) => ({ stage: t._id, count: t.count })),
+      topCategories: topCategories.map((c) => ({ category: c._id, count: c.count })),
+      topTechnologies: topTechnologies.map((t) => ({ technology: t._id, count: t.count })),
+    };
+
+    res.json({ data: report });
+  } catch (error) {
+    next(error);
+  }
+});
+
+module.exports = router;
