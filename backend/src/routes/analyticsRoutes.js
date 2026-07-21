@@ -92,3 +92,98 @@ router.get("/dashboard", async (req, res, next) => {
     next(error);
   }
 });
+
+
+router.get("/sentiment-trends", async (req, res, next) => {
+  try {
+    const days = parseInt(req.query.days, 10) || 30;
+    const technology = req.query.technology;
+
+    if (!technology) {
+      return res.status(400).json({ error: "Technology query parameter is required" });
+    }
+
+    const trendData = await Sentiment.getSentimentTrend(technology, days);
+
+    res.json({
+      data: {
+        technology,
+        days,
+        trend: trendData,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/technology-distribution", async (req, res, next) => {
+  try {
+    const distribution = await News.aggregate([
+      { $unwind: "$technologies" },
+      { $group: { _id: "$technologies", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+      { $limit: 30 },
+    ]);
+
+    const categoryDistribution = await News.aggregate([
+      { $group: { _id: "$category", count: { $sum: 1 } } },
+      { $sort: { count: -1 } },
+    ]);
+
+    res.json({
+      data: {
+        byTechnology: distribution.map((d) => ({ technology: d._id, count: d.count })),
+        byCategory: categoryDistribution.map((c) => ({ category: c._id, count: c.count })),
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/growth-comparison", async (req, res, next) => {
+  try {
+    const techsParam = req.query.techs;
+    if (!techsParam) {
+      return res.status(400).json({ error: "techs query parameter is required" });
+    }
+
+    const techs = Array.isArray(techsParam) ? techsParam : techsParam.split(",").map((t) => t.trim().toLowerCase());
+
+    if (techs.length === 0) {
+      return res.status(400).json({ error: "At least one technology is required" });
+    }
+
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    const sixtyDaysAgo = new Date(Date.now() - 60 * 24 * 60 * 60 * 1000);
+
+    const comparisons = await Promise.all(
+      techs.map(async (tech) => {
+        const [recentCount, previousCount] = await Promise.all([
+          News.countDocuments({ technologies: tech, publishedAt: { $gte: thirtyDaysAgo } }),
+          News.countDocuments({ technologies: tech, publishedAt: { $gte: sixtyDaysAgo, $lt: thirtyDaysAgo } }),
+        ]);
+
+        const growthRate = previousCount > 0
+          ? ((recentCount - previousCount) / previousCount) * 100
+          : recentCount > 0
+            ? 100
+            : 0;
+
+        return {
+          technology: tech,
+          recentCount,
+          previousCount,
+          growthRate: parseFloat(growthRate.toFixed(2)),
+        };
+      })
+    );
+
+    comparisons.sort((a, b) => b.growthRate - a.growthRate);
+
+    res.json({ data: comparisons });
+  } catch (error) {
+    next(error);
+  }
+});
