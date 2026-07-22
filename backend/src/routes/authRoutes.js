@@ -96,3 +96,65 @@ router.post("/login", authLimiter, validateLogin, async (req, res, next) => {
     next(error);
   }
 });
+
+router.post("/refresh", async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+    if (!refreshToken) {
+      return res.status(400).json({ error: "Refresh token is required" });
+    }
+
+    const jwt = require("jsonwebtoken");
+    let decoded;
+    try {
+      decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET || "atin_jwt_refresh_secret", {
+        algorithms: ["HS256"],
+      });
+    } catch (err) {
+      if (err.name === "TokenExpiredError") {
+        return res.status(401).json({ error: "Refresh token expired" });
+      }
+      return res.status(401).json({ error: "Invalid refresh token" });
+    }
+
+    if (decoded.type !== "refresh") {
+      return res.status(401).json({ error: "Invalid token type" });
+    }
+
+    const user = await User.findById(decoded.sub).select("+password");
+    if (!user) {
+      return res.status(401).json({ error: "User not found" });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ error: "Account is deactivated" });
+    }
+
+    const storedToken = user.refreshTokens.find((rt) => rt.token === refreshToken);
+    if (!storedToken) {
+      logger.warn("Refresh token reuse detected", { userId: user._id });
+      user.refreshTokens = [];
+      await user.save({ validateBeforeSave: false });
+      return res.status(401).json({ error: "Refresh token has been revoked" });
+    }
+
+    if (new Date() > storedToken.expiresAt) {
+      await user.removeRefreshToken(refreshToken);
+      return res.status(401).json({ error: "Refresh token expired" });
+    }
+
+    await user.removeRefreshToken(refreshToken);
+
+    const newAccessToken = user.generateAccessToken();
+    const { token: newRefreshToken, expiresAt } = user.generateRefreshToken();
+    const userAgent = req.headers["user-agent"] || "";
+    await user.addRefreshToken(newRefreshToken, expiresAt, userAgent);
+
+    res.json({
+      accessToken: newAccessToken,
+      refreshToken: newRefreshToken,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
