@@ -43,3 +43,56 @@ router.post("/register", createAccountLimiter, validateRegister, async (req, res
     next(error);
   }
 });
+
+router.post("/login", authLimiter, validateLogin, async (req, res, next) => {
+  try {
+    const { email, password } = req.body;
+
+    const user = await User.findOne({ email }).select("+password");
+    if (!user) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    if (!user.isActive) {
+      return res.status(403).json({ error: "Account is deactivated" });
+    }
+
+    if (user.isLocked()) {
+      const remainingMs = user.lockUntil.getTime() - Date.now();
+      const remainingMin = Math.ceil(remainingMs / 60000);
+      return res.status(423).json({
+        error: `Account is locked. Try again in ${remainingMin} minute(s)`,
+      });
+    }
+
+    const isMatch = await user.comparePassword(password);
+    if (!isMatch) {
+      await user.incrementLoginAttempts();
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    if (user.loginAttempts > 0) {
+      await user.updateOne({ $set: { loginAttempts: 0 }, $unset: { lockUntil: 1 } });
+    }
+
+    const accessToken = user.generateAccessToken();
+    const { token: refreshToken, expiresAt } = user.generateRefreshToken();
+    const userAgent = req.headers["user-agent"] || "";
+    await user.addRefreshToken(refreshToken, expiresAt, userAgent);
+
+    logger.info("User logged in", { userId: user._id });
+
+    res.json({
+      user: {
+        id: user._id,
+        username: user.username,
+        email: user.email,
+        role: user.role,
+      },
+      accessToken,
+      refreshToken,
+    });
+  } catch (error) {
+    next(error);
+  }
+});
