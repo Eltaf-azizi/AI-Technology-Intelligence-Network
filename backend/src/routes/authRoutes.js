@@ -158,3 +158,32 @@ router.post("/refresh", async (req, res, next) => {
     next(error);
   }
 });
+
+router.post("/logout", authenticate, async (req, res, next) => {
+  try {
+    const { refreshToken } = req.body;
+
+    if (refreshToken) {
+      await req.user.removeRefreshToken(refreshToken);
+    }
+
+    logger.info("User logged out", { userId: req.user._id });
+
+    res.json({ message: "Logged out successfully" });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get("/me", authenticate, async (req, res) => {
+  res.json({
+    user: {
+      id: req.user._id,
+      username: req.user.username,
+      email: req.user.email,
+      role: req.user.role,
+      preferences: req.user.preferences,
+      createdAt: req.user.createdAt,
+    },
+  });
+});
