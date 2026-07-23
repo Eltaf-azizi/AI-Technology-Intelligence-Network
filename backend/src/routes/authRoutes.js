@@ -250,3 +250,39 @@ router.post("/forgot-password", authLimiter, async (req, res, next) => {
   }
 });
 
+
+router.post("/reset-password/:token", async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    if (!password || password.length < 8) {
+      return res.status(400).json({ error: "Password must be at least 8 characters" });
+    }
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+      passwordResetToken: hashedToken,
+      passwordResetExpires: { $gt: Date.now() },
+    }).select("+password");
+
+    if (!user) {
+      return res.status(400).json({ error: "Invalid or expired reset token" });
+    }
+
+    user.password = password;
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    user.refreshTokens = [];
+    await user.save();
+
+    logger.info("Password reset completed", { userId: user._id });
+
+    res.json({ message: "Password reset successfully. Please log in with your new password" });
+  } catch (error) {
+    next(error);
+  }
+});
+
+module.exports = router;
