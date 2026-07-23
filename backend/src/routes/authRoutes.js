@@ -216,3 +216,37 @@ router.get("/verify-email/:token", async (req, res, next) => {
     next(error);
   }
 });
+
+
+router.post("/forgot-password", authLimiter, async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ error: "Email is required" });
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+
+    if (!user) {
+      return res.json({ message: "If an account exists with that email, a reset link has been sent" });
+    }
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    const hashedToken = crypto.createHash("sha256").update(resetToken).digest("hex");
+
+    user.passwordResetToken = hashedToken;
+    user.passwordResetExpires = Date.now() + 60 * 60 * 1000;
+    await user.save({ validateBeforeSave: false });
+
+    logger.info("Password reset requested", { userId: user._id });
+
+    res.json({
+      message: "If an account exists with that email, a reset link has been sent",
+      ...(process.env.NODE_ENV !== "production" && { resetToken }),
+    });
+  } catch (error) {
+    next(error);
+  }
+});
+
