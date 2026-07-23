@@ -187,3 +187,32 @@ router.get("/me", authenticate, async (req, res) => {
     },
   });
 });
+
+
+router.get("/verify-email/:token", async (req, res, next) => {
+  try {
+    const { token } = req.params;
+
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
+
+    const user = await User.findOne({
+      emailVerificationToken: hashedToken,
+      emailVerificationExpires: { $gt: Date.now() },
+    });
+
+    if (!user) {
+      return res.status(400).json({ error: "Invalid or expired verification token" });
+    }
+
+    user.emailVerified = true;
+    user.emailVerificationToken = undefined;
+    user.emailVerificationExpires = undefined;
+    await user.save({ validateBeforeSave: false });
+
+    logger.info("Email verified", { userId: user._id });
+
+    res.json({ message: "Email verified successfully" });
+  } catch (error) {
+    next(error);
+  }
+});
