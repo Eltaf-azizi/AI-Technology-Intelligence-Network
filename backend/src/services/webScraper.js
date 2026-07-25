@@ -188,3 +188,50 @@ async function validateSource(url) {
     };
   }
 }
+
+async function extractRSSFeed(feedUrl) {
+  try {
+    const response = await fetchWithRetry(feedUrl);
+    const contentType = response.headers["content-type"] || "";
+
+    if (!contentType.includes("xml") && !contentType.includes("rss") && !contentType.includes("atom")) {
+      const $ = cheerio.load(response.data);
+      const rssLink = $('link[type="application/rss+xml"], link[type="application/atom+xml"]').first().attr("href");
+      if (rssLink) {
+        const absoluteUrl = new URL(rssLink, feedUrl).href;
+        return extractRSSFeed(absoluteUrl);
+      }
+    }
+
+    const $ = cheerio.load(response.data, { xmlMode: true });
+
+    const items = [];
+    const entries = $("entry, item");
+
+    entries.each((i, el) => {
+      const $el = $(el);
+      const title = $el.find("title").first().text().trim();
+      const link = $el.find("link").first().attr("href") || $el.find("link").first().text().trim();
+      const description = $el.find("description, summary, content\\:encoded").first().text().trim();
+      const pubDate = $el.find("published, updated, pubDate").first().text().trim();
+
+      if (title && link) {
+        items.push({
+          title,
+          url: link,
+          description: description.substring(0, 2000),
+          publishedAt: pubDate ? new Date(pubDate).toISOString() : null,
+        });
+      }
+    });
+
+    return {
+      feedUrl,
+      itemCount: items.length,
+      items,
+    };
+  } catch (error) {
+    logger.error("RSS feed extraction error", { feedUrl, error: error.message });
+    return { feedUrl, itemCount: 0, items: [], error: error.message };
+  }
+}
