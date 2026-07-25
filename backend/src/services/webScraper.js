@@ -235,3 +235,71 @@ async function extractRSSFeed(feedUrl) {
     return { feedUrl, itemCount: 0, items: [], error: error.message };
   }
 }
+
+async function batchScrape(urls, concurrency = MAX_CONCURRENT) {
+  const results = [];
+  const queue = [...urls];
+  const active = [];
+
+  while (queue.length > 0 || active.length > 0) {
+    while (active.length < concurrency && queue.length > 0) {
+      const url = queue.shift();
+      const promise = scrapeArticle(url)
+        .then((result) => {
+          active.splice(active.indexOf(promise), 1);
+          results.push({ url, success: true, data: result });
+        })
+        .catch((error) => {
+          active.splice(active.indexOf(promise), 1);
+          results.push({ url, success: false, error: error.message });
+        });
+      active.push(promise);
+    }
+
+    if (active.length > 0) {
+      await Promise.race(active);
+    }
+  }
+
+  return results;
+}
+
+async function fetchWithRetry(url, retryCount = 0) {
+  try {
+    const response = await axios.get(url, {
+      timeout: REQUEST_TIMEOUT,
+      maxRedirects: 10,
+      headers: {
+        "User-Agent": USER_AGENT,
+        Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "en-US,en;q=0.5",
+      },
+      responseType: "text",
+    });
+
+    return response;
+  } catch (error) {
+    if (retryCount < MAX_RETRIES && isRetryableError(error)) {
+      const delay = RETRY_DELAY_MS * Math.pow(2, retryCount);
+      logger.warn("Retrying request", { url, attempt: retryCount + 1, delayMs: delay });
+      await new Promise((resolve) => setTimeout(resolve, delay));
+      return fetchWithRetry(url, retryCount + 1);
+    }
+    throw error;
+  }
+}
+
+function isRetryableError(error) {
+  if (error.response) {
+    const status = error.response.status;
+    return status === 429 || status === 503 || status === 502 || status === 500;
+  }
+  return error.code === "ECONNRESET" || error.code === "ETIMEDOUT" || error.code === "ENOTFOUND";
+}
+
+module.exports = {
+  scrapeArticle,
+  validateSource,
+  extractRSSFeed,
+  batchScrape,
+};
