@@ -81,3 +81,58 @@ function extractContent($) {
   $("script, style, nav, header, footer, aside, .ad, .advertisement").remove();
   return $("body").text().replace(/\s+/g, " ").trim().substring(0, 50000);
 }
+
+function extractMetadata($, url) {
+  const getMeta = (selectors) => {
+    for (const selector of selectors) {
+      const el = $(selector);
+      if (el.length) {
+        return (el.attr("content") || el.text()).trim();
+      }
+    }
+    return "";
+  };
+
+  return {
+    description: getMeta([
+      'meta[property="og:description"]',
+      'meta[name="description"]',
+      'meta[name="twitter:description"]',
+    ]),
+    imageUrl: getMeta([
+      'meta[property="og:image"]',
+      'meta[name="twitter:image"]',
+    ]),
+    siteName: getMeta([
+      'meta[property="og:site_name"]',
+      'meta[name="application-name"]',
+    ]),
+    type: getMeta(['meta[property="og:type"]']),
+    language: $("html").attr("lang") || "",
+    keywords: getMeta(['meta[name="keywords"]']),
+  };
+}
+
+function extractAuthor($) {
+  const selectors = [
+    'meta[name="author"]',
+    'meta[property="article:author"]',
+    ".author-name",
+    ".byline",
+    '[rel="author"]',
+    ".article-author",
+    '[class*="author"]',
+  ];
+
+  for (const selector of selectors) {
+    const el = $(selector);
+    if (el.length) {
+      const content = el.attr("content") || el.text();
+      if (content && content.trim().length > 0 && content.trim().length < 200) {
+        return content.trim();
+      }
+    }
+  }
+
+  return "Unknown";
+}
