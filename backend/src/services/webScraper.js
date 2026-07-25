@@ -136,3 +136,55 @@ function extractAuthor($) {
 
   return "Unknown";
 }
+
+function extractPublishedDate($) {
+  const selectors = [
+    'meta[property="article:published_time"]',
+    'meta[name="date"]',
+    'meta[name="publish-date"]',
+    'meta[name="article:published_time"]',
+    "time[datetime]",
+    ".published-date",
+    ".post-date",
+    ".article-date",
+  ];
+
+  for (const selector of selectors) {
+    const el = $(selector);
+    if (el.length) {
+      const dateStr = el.attr("content") || el.attr("datetime") || el.text();
+      const parsed = new Date(dateStr);
+      if (!isNaN(parsed.getTime())) {
+        return parsed.toISOString();
+      }
+    }
+  }
+
+  return new Date().toISOString();
+}
+
+async function validateSource(url) {
+  try {
+    const parsedUrl = new URL(url);
+    if (!["http:", "https:"].includes(parsedUrl.protocol)) {
+      return { valid: false, error: "Only HTTP and HTTPS URLs are supported" };
+    }
+
+    const response = await axios.head(url, {
+      timeout: 5000,
+      maxRedirects: 5,
+      headers: { "User-Agent": USER_AGENT },
+    });
+
+    return {
+      valid: response.status >= 200 && response.status < 400,
+      status: response.status,
+      contentType: response.headers["content-type"] || "",
+    };
+  } catch (error) {
+    return {
+      valid: false,
+      error: error.message,
+    };
+  }
+}
