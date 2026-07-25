@@ -74,3 +74,91 @@ function predictGrowth(historicalData) {
     nextDate: nextDate.toISOString().split("T")[0],
   };
 }
+
+function calculateMomentum(dataPoints) {
+  if (!Array.isArray(dataPoints) || dataPoints.length < 2) {
+    return 0;
+  }
+
+  const sorted = [...dataPoints].sort(
+    (a, b) => new Date(a.date) - new Date(b.date)
+  );
+
+  const growthValues = sorted.map((d) => d.growth);
+  const n = growthValues.length;
+
+  if (n < 2) return 0;
+
+  let roc = 0;
+  if (n >= 4) {
+    const recentHalf = growthValues.slice(Math.floor(n / 2));
+    const olderHalf = growthValues.slice(0, Math.floor(n / 2));
+
+    const recentAvg = recentHalf.reduce((s, v) => s + v, 0) / recentHalf.length;
+    const olderAvg = olderHalf.reduce((s, v) => s + v, 0) / olderHalf.length;
+
+    roc = olderAvg !== 0 ? ((recentAvg - olderAvg) / Math.abs(olderAvg)) * 100 : recentAvg * 10;
+  } else {
+    const last = growthValues[n - 1];
+    const first = growthValues[0];
+    roc = first !== 0 ? ((last - first) / Math.abs(first)) * 100 : last * 10;
+  }
+
+  const momentum = Math.min(100, Math.max(0, 50 + roc * 0.5));
+
+  return parseFloat(momentum.toFixed(2));
+}
+
+function classifyStage(metrics) {
+  const { currentGrowth, momentum, historicalData } = metrics;
+
+  const growth = currentGrowth || 0;
+  const mom = momentum || 0;
+
+  let recentMomentum = 0;
+  if (Array.isArray(historicalData) && historicalData.length >= 3) {
+    const sorted = [...historicalData].sort(
+      (a, b) => new Date(a.date) - new Date(b.date)
+    );
+    const recent3 = sorted.slice(-3);
+    const older3 = sorted.slice(0, Math.min(3, sorted.length));
+
+    const recentAvg = recent3.reduce((s, d) => s + d.growth, 0) / recent3.length;
+    const olderAvg = older3.reduce((s, d) => s + d.growth, 0) / older3.length;
+
+    recentMomentum = recentAvg - olderAvg;
+  }
+
+  if (growth > 20 && mom > 60 && recentMomentum > 0) {
+    return "Growing";
+  }
+
+  if (growth > 5 && growth <= 20 && mom > 40) {
+    if (recentMomentum > 0) {
+      return "Growing";
+    }
+    return "Mature";
+  }
+
+  if (growth > 0 && growth <= 5 && mom >= 30 && mom <= 60) {
+    return "Mature";
+  }
+
+  if (growth <= 0 && mom < 40 && recentMomentum <= 0) {
+    return "Declining";
+  }
+
+  if (growth < -10 || mom < 20) {
+    return "Declining";
+  }
+
+  if (growth > 0 && mom < 40) {
+    return "Emerging";
+  }
+
+  if (growth >= 0 && mom >= 40) {
+    return "Mature";
+  }
+
+  return "Emerging";
+}
