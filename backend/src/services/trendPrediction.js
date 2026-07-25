@@ -162,3 +162,71 @@ function classifyStage(metrics) {
 
   return "Emerging";
 }
+
+function generateForecast(trendData) {
+  const { historicalData, currentGrowth, momentum, stage } = trendData;
+
+  const current = currentGrowth || 0;
+  const mom = momentum || 50;
+  const stageStr = stage || "Emerging";
+
+  let momentumFactor = 0;
+  if (Array.isArray(historicalData) && historicalData.length >= 2) {
+    const sorted = [...historicalData].sort(
+      (a, b) => new Date(a.date) - new Date(b.date)
+    );
+    const recent = sorted.slice(-3);
+    const older = sorted.slice(0, Math.max(1, sorted.length - 3));
+
+    const recentAvg = recent.reduce((s, d) => s + d.growth, 0) / recent.length;
+    const olderAvg = older.reduce((s, d) => s + d.growth, 0) / older.length;
+
+    momentumFactor = recentAvg - olderAvg;
+  }
+
+  const growthMultiplier = {
+    "Emerging": 1.3,
+    "Growing": 1.1,
+    "Mature": 0.9,
+    "Declining": 0.6,
+  }[stageStr] || 1.0;
+
+  const shortTermGrowth = current + momentumFactor * 0.3 * growthMultiplier;
+  const mediumTermGrowth = current + momentumFactor * 0.6 * growthMultiplier;
+  const longTermGrowth = current + momentumFactor * 1.0 * growthMultiplier;
+
+  const shortTerm = formatGrowthForecast(shortTermGrowth, stageStr, "short");
+  const mediumTerm = formatGrowthForecast(mediumTermGrowth, stageStr, "medium");
+  const longTerm = formatGrowthForecast(longTermGrowth, stageStr, "long");
+
+  return {
+    shortTerm,
+    mediumTerm,
+    longTerm,
+    shortTermGrowth: parseFloat(shortTermGrowth.toFixed(2)),
+    mediumTermGrowth: parseFloat(mediumTermGrowth.toFixed(2)),
+    longTermGrowth: parseFloat(longTermGrowth.toFixed(2)),
+  };
+}
+
+function formatGrowthForecast(growth, stage, horizon) {
+  const direction = growth > 2 ? "increase" : growth < -2 ? "decrease" : "remain stable";
+  const magnitude = Math.abs(growth);
+  const intensity = magnitude > 20 ? "significant" : magnitude > 10 ? "moderate" : magnitude > 3 ? "slight" : "minimal";
+
+  const stageContext = {
+    "Emerging": "As an emerging technology",
+    "Growing": "In its growth phase",
+    "Mature": "In its mature phase",
+    "Declining": "Facing headwinds",
+  }[stage] || "The technology";
+
+  return `${stageContext} is projected to ${direction} over the ${horizon === "short" ? "next quarter" : horizon === "medium" ? "next 6-12 months" : "next 1-3 years"}, with ${intensity} ${direction === "remain stable" ? "change" : "growth"} expected (projected rate: ${growth > 0 ? "+" : ""}${growth.toFixed(1)}%).`;
+}
+
+module.exports = {
+  predictGrowth,
+  calculateMomentum,
+  classifyStage,
+  generateForecast,
+};
