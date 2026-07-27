@@ -114,3 +114,45 @@ async function sendBulk(userIds, notificationData) {
     throw error;
   }
 }
+
+async function getDigest(userId, days = 7) {
+  try {
+    const cutoffDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000);
+
+    const [notifications, summary] = await Promise.all([
+      Notification.find({
+        userId,
+        createdAt: { $gte: cutoffDate },
+        isRead: false,
+      })
+        .sort({ priority: 1, createdAt: -1 })
+        .limit(50)
+        .lean(),
+      Notification.getSummary(userId),
+    ]);
+
+    const summaryData = summary[0] || {
+      total: 0,
+      unread: 0,
+      alerts: 0,
+      updates: 0,
+      urgentCount: 0,
+    };
+
+    return {
+      period: {
+        from: cutoffDate.toISOString(),
+        to: new Date().toISOString(),
+        days,
+      },
+      summary: summaryData,
+      notifications,
+    };
+  } catch (error) {
+    logger.error("Failed to get notification digest", {
+      userId,
+      error: error.message,
+    });
+    throw error;
+  }
+}
