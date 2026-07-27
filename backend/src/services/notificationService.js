@@ -156,3 +156,34 @@ async function getDigest(userId, days = 7) {
     throw error;
   }
 }
+
+async function cleanupOld(maxAgeDays = 90) {
+  try {
+    const cutoffDate = new Date(Date.now() - maxAgeDays * 24 * 60 * 60 * 1000);
+
+    const result = await Notification.deleteMany({
+      createdAt: { $lt: cutoffDate },
+      isRead: true,
+    });
+
+    logger.info("Old notifications cleaned up", {
+      deletedCount: result.deletedCount,
+      olderThan: cutoffDate.toISOString(),
+    });
+
+    return { deletedCount: result.deletedCount };
+  } catch (error) {
+    logger.error("Failed to cleanup old notifications", {
+      error: error.message,
+    });
+    throw error;
+  }
+}
+
+module.exports = {
+  setSocketIO,
+  createNotification,
+  sendBulk,
+  getDigest,
+  cleanupOld,
+};
