@@ -67,3 +67,42 @@ function buildLayout(title, bodyContent) {
 </body>
 </html>`;
 }
+
+async function sendEmail(to, subject, html) {
+  try {
+    const transport = getTransporter();
+    const info = await transport.sendMail({
+      from: `"${APP_NAME}" <${FROM_ADDRESS}>`,
+      to,
+      subject,
+      html,
+    });
+
+    logger.info("Email sent", { to, subject, messageId: info.messageId });
+    return { success: true, messageId: info.messageId };
+  } catch (error) {
+    logger.error("Email send error", { to, subject, error: error.message });
+    return { success: false, error: error.message };
+  }
+}
+
+async function sendWelcomeEmail(user) {
+  const bodyContent = `
+    <h2>Welcome to ${APP_NAME}!</h2>
+    <p>Hi ${user.username},</p>
+    <p>Your account has been created successfully. You now have access to real-time AI technology intelligence, trend analysis, and sentiment insights.</p>
+    <div class="info-box">
+      <strong>Account Details</strong><br>
+      Username: ${user.username}<br>
+      Email: ${user.email}
+    </div>
+    <p>Get started by exploring the dashboard and setting up your notification preferences.</p>
+    <p style="text-align: center; margin-top: 24px;">
+      <a href="${process.env.CORS_ORIGIN || 'http://localhost:5173'}/dashboard" class="btn">Go to Dashboard</a>
+    </p>
+    <hr class="divider">
+    <p style="font-size: 13px; color: #64748b;">If you have any questions, reply to this email or visit our help center.</p>
+  `;
+
+  return sendEmail(user.email, `Welcome to ${APP_NAME}`, buildLayout("Welcome", bodyContent));
+}
