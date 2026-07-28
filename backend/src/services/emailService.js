@@ -106,3 +106,42 @@ async function sendWelcomeEmail(user) {
 
   return sendEmail(user.email, `Welcome to ${APP_NAME}`, buildLayout("Welcome", bodyContent));
 }
+
+async function sendPasswordReset(user, token) {
+  const resetUrl = `${process.env.CORS_ORIGIN || 'http://localhost:5173'}/reset-password?token=${token}`;
+
+  const bodyContent = `
+    <h2>Password Reset Request</h2>
+    <p>Hi ${user.username},</p>
+    <p>We received a request to reset your password. Click the button below to create a new password. This link expires in 1 hour.</p>
+    <p style="text-align: center; margin-top: 24px;">
+      <a href="${resetUrl}" class="btn">Reset Password</a>
+    </p>
+    <div class="info-box">
+      <strong>Didn't request this?</strong><br>
+      If you didn't request a password reset, please ignore this email. Your password will remain unchanged.
+    </div>
+    <p style="font-size: 13px; color: #94a3b8; word-break: break-all;">Reset URL: ${resetUrl}</p>
+  `;
+
+  return sendEmail(user.email, "Reset Your Password - ATIN", buildLayout("Password Reset", bodyContent));
+}
+
+async function sendNotification(user, notification) {
+  const bodyContent = `
+    <h2>${notification.title}</h2>
+    <p>Hi ${user.username},</p>
+    <p>${notification.message}</p>
+    ${notification.data && notification.data.url ? `
+    <p style="text-align: center; margin-top: 24px;">
+      <a href="${notification.data.url}" class="btn">View Details</a>
+    </p>
+    ` : ""}
+    <div class="info-box">
+      <strong>Notification Type:</strong> ${notification.type}<br>
+      <strong>Priority:</strong> ${notification.priority || "medium"}
+    </div>
+  `;
+
+  return sendEmail(user.email, notification.title, buildLayout(notification.title, bodyContent));
+}
