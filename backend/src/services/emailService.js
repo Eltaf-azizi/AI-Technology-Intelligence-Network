@@ -145,3 +145,43 @@ async function sendNotification(user, notification) {
 
   return sendEmail(user.email, notification.title, buildLayout(notification.title, bodyContent));
 }
+
+async function sendWeeklyDigest(user, digest) {
+  const newsItems = (digest.news || []).map((n) => `
+    <div style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+      <strong>${n.title}</strong>
+      <p style="font-size: 13px; color: #64748b; margin: 4px 0 0;">${n.category} &bull; ${n.sentimentLabel || "neutral"}</p>
+    </div>
+  `).join("");
+
+  const trendItems = (digest.trends || []).map((t) => `
+    <div style="padding: 12px 0; border-bottom: 1px solid #e2e8f0;">
+      <strong>${t.name}</strong> - <span style="color: ${t.currentGrowth > 0 ? '#16a34a' : '#dc2626'};">${t.currentGrowth > 0 ? '+' : ''}${t.currentGrowth}%</span>
+      <p style="font-size: 13px; color: #64748b; margin: 4px 0 0;">Stage: ${t.stage}</p>
+    </div>
+  `).join("");
+
+  const bodyContent = `
+    <h2>Your Weekly Digest</h2>
+    <p>Hi ${user.username},</p>
+    <p>Here's your weekly summary of the AI technology landscape.</p>
+    <hr class="divider">
+    <h2>Top News This Week</h2>
+    ${newsItems || '<p style="color: #94a3b8;">No news articles this week.</p>'}
+    <hr class="divider">
+    <h2>Trending Technologies</h2>
+    ${trendItems || '<p style="color: #94a3b8;">No trending data this week.</p>'}
+    <p style="text-align: center; margin-top: 24px;">
+      <a href="${process.env.CORS_ORIGIN || 'http://localhost:5173'}/dashboard" class="btn">View Full Dashboard</a>
+    </p>
+  `;
+
+  return sendEmail(user.email, "Your Weekly ATIN Digest", buildLayout("Weekly Digest", bodyContent));
+}
+
+module.exports = {
+  sendWelcomeEmail,
+  sendPasswordReset,
+  sendNotification,
+  sendWeeklyDigest,
+};
