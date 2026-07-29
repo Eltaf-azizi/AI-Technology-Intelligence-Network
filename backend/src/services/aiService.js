@@ -162,6 +162,76 @@ function extractTechnologies(text) {
   return [...found];
 }
 
+function summarizeContent(content, maxSentences = 3) {
+  if (!content || typeof content !== "string") {
+    return "";
+  }
+
+  const sentences = content
+    .replace(/\s+/g, " ")
+    .split(/(?<=[.!?])\s+/)
+    .filter((s) => s.trim().length > 10);
+
+  if (sentences.length <= maxSentences) {
+    return sentences.join(" ");
+  }
+
+  const wordScores = new Map();
+  const stopWords = new Set([
+    "the", "a", "an", "is", "are", "was", "were", "be", "been", "being",
+    "have", "has", "had", "do", "does", "did", "will", "would", "could",
+    "should", "may", "might", "can", "shall", "to", "of", "in", "for",
+    "on", "with", "at", "by", "from", "as", "into", "through", "during",
+    "before", "after", "above", "below", "between", "out", "off", "over",
+    "under", "again", "further", "then", "once", "here", "there", "when",
+    "where", "why", "how", "all", "both", "each", "few", "more", "most",
+    "other", "some", "such", "no", "nor", "not", "only", "own", "same",
+    "so", "than", "too", "very", "just", "because", "but", "and", "or",
+    "if", "while", "this", "that", "these", "those", "it", "its",
+  ]);
+
+  const wordFreq = new Map();
+  for (const sentence of sentences) {
+    const words = sentence.toLowerCase().match(/[a-z]+/g) || [];
+    for (const word of words) {
+      if (!stopWords.has(word) && word.length > 3) {
+        wordFreq.set(word, (wordFreq.get(word) || 0) + 1);
+      }
+    }
+  }
+
+  const maxFreq = Math.max(...wordFreq.values(), 1);
+  for (const [word, freq] of wordFreq) {
+    wordScores.set(word, freq / maxFreq);
+  }
+
+  const scored = sentences.map((sentence, index) => {
+    const words = sentence.toLowerCase().match(/[a-z]+/g) || [];
+    let score = 0;
+
+    for (const word of words) {
+      score += wordScores.get(word) || 0;
+    }
+
+    if (words.length > 0) {
+      score /= words.length;
+    }
+
+    const positionBonus = index < 3 ? 0.3 : index < 6 ? 0.15 : 0;
+    score += positionBonus;
+
+    return { sentence, score, index };
+  });
+
+  scored.sort((a, b) => b.score - a.score);
+  const topSentences = scored
+    .slice(0, maxSentences)
+    .sort((a, b) => a.index - b.index)
+    .map((s) => s.sentence);
+
+  return topSentences.join(" ");
+}
+
 module.exports = {
   analyzeSentiment,
   predictTrend,
