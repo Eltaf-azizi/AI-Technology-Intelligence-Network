@@ -125,3 +125,47 @@ async function generateInsights(technology) {
     };
   }
 }
+
+function extractTechnologies(text) {
+  if (!text || typeof text !== "string") {
+    return [];
+  }
+
+  const lowerText = text.toLowerCase();
+  const found = new Set();
+
+  for (const [category, keywords] of Object.entries(TECH_KEYWORDS)) {
+    for (const keyword of keywords) {
+      if (lowerText.includes(keyword)) {
+        found.add(category);
+        break;
+      }
+    }
+  }
+
+  const additionalTerms = [
+    "gpt", "bert", "llm", "large language model", "diffusion model",
+    "federated learning", "mlops", "dataOps", "devops",
+    "microservices", "api", "saas", "paas", "iaas",
+    "edge computing", "5g", "6g", "neuromorphic",
+    "optical computing", "photonic", "synthetic biology",
+    "digital twin", "metaverse", "web3", "defi",
+    "zero-knowledge proof", "homomorphic encryption",
+  ];
+
+  for (const term of additionalTerms) {
+    if (lowerText.includes(term)) {
+      found.add(term.replace(/\s+/g, "-"));
+    }
+  }
+
+  return [...found];
+}
+
+module.exports = {
+  analyzeSentiment,
+  predictTrend,
+  generateInsights,
+  extractTechnologies,
+  summarizeContent,
+};
