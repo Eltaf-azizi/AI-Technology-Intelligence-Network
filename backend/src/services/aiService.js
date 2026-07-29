@@ -33,3 +33,51 @@ async function analyzeSentiment(text) {
     return { score: 0, label: "neutral", confidence: 0.3 };
   }
 }
+
+async function predictTrend(historicalData) {
+  try {
+    if (!Array.isArray(historicalData) || historicalData.length < 2) {
+      return {
+        prediction: null,
+        confidence: 0,
+        direction: "insufficient-data",
+      };
+    }
+
+    const sortedData = [...historicalData].sort(
+      (a, b) => new Date(a.date) - new Date(b.date)
+    );
+
+    const growthPoints = sortedData.map((d) => d.growth);
+    const prediction = trendPrediction.predictGrowth(sortedData);
+    const momentum = trendPrediction.calculateMomentum(sortedData);
+    const stage = trendPrediction.classifyStage({
+      currentGrowth: growthPoints[growthPoints.length - 1],
+      momentum,
+      historicalData: sortedData,
+    });
+
+    const forecast = trendPrediction.generateForecast({
+      historicalData: sortedData,
+      currentGrowth: growthPoints[growthPoints.length - 1],
+      momentum,
+      stage,
+    });
+
+    return {
+      prediction: prediction,
+      momentum,
+      stage,
+      forecast,
+      confidence: Math.min(0.5 + sortedData.length * 0.05, 0.95),
+      direction: prediction.slope > 0 ? "upward" : prediction.slope < 0 ? "downward" : "stable",
+    };
+  } catch (error) {
+    logger.error("AI trend prediction error", { error: error.message });
+    return {
+      prediction: null,
+      confidence: 0,
+      direction: "error",
+    };
+  }
+}
