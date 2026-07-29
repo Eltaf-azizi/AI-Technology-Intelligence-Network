@@ -81,3 +81,47 @@ async function predictTrend(historicalData) {
     };
   }
 }
+
+async function generateInsights(technology) {
+  try {
+    const techLower = (technology || "").toLowerCase();
+    const insights = [];
+
+    for (const [category, keywords] of Object.entries(TECH_KEYWORDS)) {
+      if (keywords.some((kw) => techLower.includes(kw) || category.includes(techLower))) {
+        insights.push({
+          category,
+          relevance: "high",
+          context: `${technology} falls within the ${category} domain.`,
+        });
+      }
+    }
+
+    if (insights.length === 0) {
+      insights.push({
+        category: "general",
+        relevance: "medium",
+        context: `${technology} is tracked across general technology topics.`,
+      });
+    }
+
+    const summary = insights
+      .map((i) => i.context)
+      .join(" ");
+
+    return {
+      technology,
+      insights,
+      summary,
+      generatedAt: new Date().toISOString(),
+    };
+  } catch (error) {
+    logger.error("AI insight generation error", { technology, error: error.message });
+    return {
+      technology,
+      insights: [],
+      summary: `Unable to generate insights for ${technology}`,
+      generatedAt: new Date().toISOString(),
+    };
+  }
+}
