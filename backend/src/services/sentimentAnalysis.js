@@ -282,6 +282,54 @@ function getLexicon() {
   };
 }
 
+function calculateAggregate(scores) {
+  if (!Array.isArray(scores) || scores.length === 0) {
+    return {
+      average: 0,
+      median: 0,
+      stdDev: 0,
+      positiveRatio: 0,
+      negativeRatio: 0,
+      neutralRatio: 0,
+      count: 0,
+    };
+  }
+
+  const values = scores.map((s) => (typeof s === "number" ? s : s.score || 0));
+  const sorted = [...values].sort((a, b) => a - b);
+
+  const sum = values.reduce((acc, v) => acc + v, 0);
+  const average = sum / values.length;
+
+  const median = sorted.length % 2 === 0
+    ? (sorted[sorted.length / 2 - 1] + sorted[sorted.length / 2]) / 2
+    : sorted[Math.floor(sorted.length / 2)];
+
+  const variance = values.reduce((acc, v) => acc + Math.pow(v - average, 2), 0) / values.length;
+  const stdDev = Math.sqrt(variance);
+
+  const now = Date.now();
+  const oneDay = 24 * 60 * 60 * 1000;
+
+  const weightedSum = values.reduce((acc, v, i) => {
+    const weight = 1;
+    return acc + v * weight;
+  }, 0);
+
+  const positiveCount = values.filter((v) => v > 0.1).length;
+  const negativeCount = values.filter((v) => v < -0.1).length;
+  const neutralCount = values.length - positiveCount - negativeCount;
+
+  return {
+    average: parseFloat(average.toFixed(4)),
+    median: parseFloat(median.toFixed(4)),
+    stdDev: parseFloat(stdDev.toFixed(4)),
+    positiveRatio: parseFloat((positiveCount / values.length).toFixed(4)),
+    negativeRatio: parseFloat((negativeCount / values.length).toFixed(4)),
+    neutralRatio: parseFloat((neutralCount / values.length).toFixed(4)),
+    count: values.length,
+  };
+}
 
 module.exports = {
   analyzeText,
