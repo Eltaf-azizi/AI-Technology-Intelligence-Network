@@ -148,3 +148,32 @@ const NEGATIVE_TECH_KEYWORDS = new Map([
   ["regression", -0.5],
   ["decay", -0.5],
 ]);
+
+const INTENSIFIERS = new Map([
+  ["very", 1.3],
+  ["extremely", 1.5],
+  ["incredibly", 1.4],
+  ["highly", 1.3],
+  ["significantly", 1.3],
+  ["substantially", 1.2],
+  ["tremendously", 1.4],
+  ["remarkably", 1.3],
+  ["exceptionally", 1.4],
+  ["particularly", 1.2],
+  ["especially", 1.3],
+  ["major", 1.2],
+  ["massive", 1.3],
+  ["huge", 1.3],
+  ["dramatic", 1.3],
+  ["severe", 1.3],
+  ["critical", 1.2],
+  ["catastrophic", 1.5],
+  ["devastating", 1.5],
+]);
+
+const NEGATORS = new Set([
+  "not", "no", "never", "neither", "nor", "hardly", "barely",
+  "scarcely", "seldom", "rarely", "doesn't", "don't", "didn't",
+  "won't", "wouldn't", "couldn't", "shouldn't", "isn't", "aren't",
+  "wasn't", "weren't", "hasn't", "haven't", "hadn't",
+]);
