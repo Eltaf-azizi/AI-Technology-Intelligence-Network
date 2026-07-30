@@ -258,3 +258,34 @@ function analyzeText(text) {
     confidence: parseFloat(confidence.toFixed(4)),
   };
 }
+
+function analyzeBatch(texts) {
+  if (!Array.isArray(texts)) {
+    return [];
+  }
+
+  return texts.map((text, index) => {
+    const result = analyzeText(text);
+    return {
+      index,
+      ...result,
+    };
+  });
+}
+
+function getLexicon() {
+  return {
+    positive: Object.fromEntries(POSITIVE_TECH_KEYWORDS),
+    negative: Object.fromEntries(NEGATIVE_TECH_KEYWORDS),
+    intensifiers: Object.fromEntries(INTENSIFIERS),
+    negators: [...NEGATORS],
+  };
+}
+
+
+module.exports = {
+  analyzeText,
+  analyzeBatch,
+  getLexicon,
+  calculateAggregate,
+};
