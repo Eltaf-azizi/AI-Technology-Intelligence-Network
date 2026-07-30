@@ -177,3 +177,84 @@ const NEGATORS = new Set([
   "won't", "wouldn't", "couldn't", "shouldn't", "isn't", "aren't",
   "wasn't", "weren't", "hasn't", "haven't", "hadn't",
 ]);
+
+function analyzeText(text) {
+  if (!text || typeof text !== "string") {
+    return { score: 0, label: "neutral", confidence: 0.3 };
+  }
+
+  const sentences = text
+    .replace(/\s+/g, " ")
+    .split(/(?<=[.!?])\s+/)
+    .filter((s) => s.trim().length > 0);
+
+  if (sentences.length === 0) {
+    return { score: 0, label: "neutral", confidence: 0.3 };
+  }
+
+  let totalScore = 0;
+  let matchedWords = 0;
+  const totalWords = text.toLowerCase().split(/\s+/).length;
+
+  for (const sentence of sentences) {
+    const words = sentence.toLowerCase().match(/[a-z'-]+/g) || [];
+    let sentenceScore = 0;
+    let sentenceMatched = 0;
+
+    for (let i = 0; i < words.length; i++) {
+      const word = words[i];
+
+      let multiplier = 1;
+      for (let j = Math.max(0, i - 2); j < i; j++) {
+        if (NEGATORS.has(words[j])) {
+          multiplier *= -1;
+        }
+        if (INTENSIFIERS.has(words[j])) {
+          multiplier *= INTENSIFIERS.get(words[j]);
+        }
+      }
+
+      if (POSITIVE_TECH_KEYWORDS.has(word)) {
+        sentenceScore += POSITIVE_TECH_KEYWORDS.get(word) * multiplier;
+        sentenceMatched++;
+      } else if (NEGATIVE_TECH_KEYWORDS.has(word)) {
+        sentenceScore += NEGATIVE_TECH_KEYWORDS.get(word) * multiplier;
+        sentenceMatched++;
+      }
+
+      const bigram = i > 0 ? `${words[i - 1]} ${word}` : "";
+      if (bigram && POSITIVE_TECH_KEYWORDS.has(bigram)) {
+        sentenceScore += POSITIVE_TECH_KEYWORDS.get(bigram) * multiplier;
+        sentenceMatched++;
+      } else if (bigram && NEGATIVE_TECH_KEYWORDS.has(bigram)) {
+        sentenceScore += NEGATIVE_TECH_KEYWORDS.get(bigram) * multiplier;
+        sentenceMatched++;
+      }
+    }
+
+    totalScore += sentenceScore;
+    matchedWords += sentenceMatched;
+  }
+
+  const normalizedScore = sentences.length > 0
+    ? Math.max(-1, Math.min(1, totalScore / sentences.length))
+    : 0;
+
+  const matchRatio = totalWords > 0 ? matchedWords / totalWords : 0;
+  const confidence = Math.min(0.5 + matchRatio * 5 + sentences.length * 0.02, 0.95);
+
+  let label;
+  if (normalizedScore > 0.1) {
+    label = "positive";
+  } else if (normalizedScore < -0.1) {
+    label = "negative";
+  } else {
+    label = "neutral";
+  }
+
+  return {
+    score: parseFloat(normalizedScore.toFixed(4)),
+    label,
+    confidence: parseFloat(confidence.toFixed(4)),
+  };
+}
