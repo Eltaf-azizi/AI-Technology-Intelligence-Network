@@ -311,10 +311,28 @@ function calculateAggregate(scores) {
   const now = Date.now();
   const oneDay = 24 * 60 * 60 * 1000;
 
-  const weightedSum = values.reduce((acc, v, i) => {
-    const weight = 1;
-    return acc + v * weight;
-  }, 0);
+  // Compute a recency-weighted average when items include date information.
+  // If `scores` contains objects with a `date` property, weight recent items higher using
+  // an exponential decay (30-day half-life-ish). Fall back to equal weights otherwise.
+  let weightedSum = 0;
+  let weightTotal = 0;
+  for (let i = 0; i < scores.length; i++) {
+    const s = scores[i];
+    const v = typeof s === "number" ? s : (s && typeof s.score === "number" ? s.score : 0);
+    let weight = 1;
+    if (s && s.date) {
+      const d = new Date(s.date).getTime();
+      if (!Number.isNaN(d)) {
+        // decay window: 30 days -> use exp decay with scale = 30 days
+        const daysAgo = Math.max(0, (now - d) / oneDay);
+        const scale = 30; // days
+        weight = Math.exp(-daysAgo / scale);
+      }
+    }
+    weightedSum += v * weight;
+    weightTotal += weight;
+  }
+  const weightedAverage = weightTotal > 0 ? weightedSum / weightTotal : average;
 
   const positiveCount = values.filter((v) => v > 0.1).length;
   const negativeCount = values.filter((v) => v < -0.1).length;
@@ -322,6 +340,7 @@ function calculateAggregate(scores) {
 
   return {
     average: parseFloat(average.toFixed(4)),
+    weightedAverage: parseFloat(weightedAverage.toFixed(4)),
     median: parseFloat(median.toFixed(4)),
     stdDev: parseFloat(stdDev.toFixed(4)),
     positiveRatio: parseFloat((positiveCount / values.length).toFixed(4)),
