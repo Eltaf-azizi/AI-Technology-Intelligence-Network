@@ -26,3 +26,8 @@ export async function getReport(params = {}) {
   const { data } = await api.get('/analytics/report', { params });
   return data;
 }
+
+export async function getDailyDigest() {
+  const { data } = await api.get('/analytics/digest');
+  return data;
+}

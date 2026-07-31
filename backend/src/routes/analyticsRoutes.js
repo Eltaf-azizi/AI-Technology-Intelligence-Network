@@ -5,6 +5,7 @@ const Sentiment = require("../models/Sentiment");
 const { authenticate } = require("../middleware/auth");
 const { paginate } = require("../utils/helpers");
 const logger = require("../utils/logger");
+const { buildDailyDigest } = require("../services/digestService");
 
 const router = express.Router();
 
@@ -93,6 +94,15 @@ router.get("/dashboard", async (req, res, next) => {
   }
 });
 
+
+router.get("/digest", async (req, res, next) => {
+  try {
+    const digest = await buildDailyDigest();
+    res.json({ data: digest });
+  } catch (error) {
+    next(error);
+  }
+});
 
 router.get("/sentiment-trends", async (req, res, next) => {
   try {

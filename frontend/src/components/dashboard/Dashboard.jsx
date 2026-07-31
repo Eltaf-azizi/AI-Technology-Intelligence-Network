@@ -7,7 +7,7 @@ import {
   Activity,
   RefreshCw,
 } from 'lucide-react';
-import { getDashboard } from '../../services/analyticsService';
+import { getDashboard, getDailyDigest } from '../../services/analyticsService';
 import { formatNumber, formatPercentage } from '../../utils/formatters';
 import SentimentChart from './SentimentChart';
 import TrendAnalysis from './TrendAnalysis';
@@ -17,6 +17,7 @@ import LoadingSpinner from '../common/LoadingSpinner';
 
 export default function Dashboard() {
   const [data, setData] = useState(null);
+  const [digest, setDigest] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -24,8 +25,12 @@ export default function Dashboard() {
     setLoading(true);
     setError('');
     try {
-      const result = await getDashboard();
-      setData(result);
+      const [dashboardResult, digestResult] = await Promise.all([
+        getDashboard(),
+        getDailyDigest(),
+      ]);
+      setData(dashboardResult);
+      setDigest(digestResult);
     } catch (err) {
       setError(err.message || 'Failed to load dashboard');
     } finally {
@@ -105,6 +110,30 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {digest?.data && (
+        <div className="digest-card card">
+          <div className="digest-header">
+            <h3>Daily digest</h3>
+            <span className="digest-pill">{digest.data.highlights.newsCount} news • {digest.data.highlights.trendCount} trends</span>
+          </div>
+          <p className="digest-summary">{digest.data.summary}</p>
+          <div className="digest-metrics">
+            <div>
+              <strong>{digest.data.highlights.sentimentScore}</strong>
+              <span>Sentiment score</span>
+            </div>
+            <div>
+              <strong>{digest.data.highlights.positiveCount}</strong>
+              <span>Positive</span>
+            </div>
+            <div>
+              <strong>{digest.data.highlights.negativeCount}</strong>
+              <span>Negative</span>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="dashboard-grid">
         <div className="dashboard-main">
           <SentimentChart />
@@ -154,6 +183,51 @@ export default function Dashboard() {
           align-items: center;
           gap: 1rem;
           padding: 1.25rem;
+        }
+        .digest-card {
+          padding: 1.25rem;
+          margin-bottom: 1.5rem;
+          background: linear-gradient(135deg, rgba(0, 212, 255, 0.08), rgba(124, 77, 255, 0.1));
+        }
+        .digest-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 0.75rem;
+          margin-bottom: 0.75rem;
+        }
+        .digest-pill {
+          font-size: 0.8rem;
+          color: var(--text-secondary);
+          background: rgba(255,255,255,0.08);
+          padding: 0.35rem 0.7rem;
+          border-radius: 999px;
+        }
+        .digest-summary {
+          color: var(--text-secondary);
+          margin-bottom: 0.9rem;
+          line-height: 1.6;
+        }
+        .digest-metrics {
+          display: flex;
+          gap: 1rem;
+          flex-wrap: wrap;
+        }
+        .digest-metrics > div {
+          display: flex;
+          flex-direction: column;
+          min-width: 7.5rem;
+          padding: 0.7rem 0.9rem;
+          border-radius: var(--radius-md);
+          background: rgba(255,255,255,0.06);
+        }
+        .digest-metrics strong {
+          font-size: 1rem;
+          margin-bottom: 0.2rem;
+        }
+        .digest-metrics span {
+          font-size: 0.8rem;
+          color: var(--text-secondary);
         }
         .stat-icon {
           width: 3rem;
