@@ -1,96 +1,38 @@
-# AI Technology Intelligence Network (ATIN)
+<h1 align="center">AI Technology Intelligence Network (ATIN)</h1>
 
-An AI-powered platform that maps the entire technology ecosystem. Explore technologies, relationships, learning paths, career insights, and market trends through an interactive knowledge graph.
+<p align="center"> <strong>An AI-powered technology intelligence platform that maps, connects, and explains the world's technology ecosystem.</strong> </p>
 
-## Architecture
+<p align="center"> Discover technologies • Explore relationships • Learn faster • Understand the future </p>
 
-```
-atin/
-├── backend/          # FastAPI + SQLAlchemy + SQLite
-│   ├── app/
-│   │   ├── api/      # Route handlers (auth, technologies, etc.)
-│   │   ├── models/   # SQLAlchemy ORM models
-│   │   ├── schemas/  # Pydantic request/response schemas
-│   │   ├── services/ # Business logic layer
-│   │   ├── agents/   # AI rule-based agents (learning, trends, career)
-│   │   └── core/     # Security, rate limiting, logging
-│   ├── tests/        # Pytest test suite (~80 tests)
-│   └── data/         # SQLite database & uploads
-├── frontend/         # Next.js 15 + React 19 + TypeScript + Tailwind 4
-│   └── src/
-│       ├── app/      # App router pages (13 routes)
-│       ├── components/ # Reusable UI components
-│       └── lib/      # Types, API client, utilities
-├── docker-compose.yml
-└── Dockerfile
-```
+## Overview
 
-## Quick Start
+The AI Technology Intelligence Network (ATIN) is an intelligent platform designed to organize technology knowledge into an interconnected network.
 
-### Backend
+Instead of searching through hundreds of websites, research papers, videos, and documentation, users can explore technologies visually, understand how they relate to one another, discover learning paths, analyze research papers, and receive AI-powered guidance.
 
-```bash
-cd backend
-python -m venv .venv && .venv\Scripts\activate  # Windows
-pip install -r requirements.txt
-uvicorn main:app --host 0.0.0.0 --port 8000
-```
+ATIN transforms scattered technical information into one structured and interactive knowledge system.
 
-API docs at http://localhost:8000/docs
+Whether you are a beginner learning Python or an engineer researching Artificial Intelligence, Cloud Computing, Robotics, or Cybersecurity, ATIN helps you understand the complete picture.
 
-### Frontend
+## Vision
 
-```bash
-cd frontend
-npm install
-npm run dev
-```
+Technology is becoming more complex every year.
 
-Open http://localhost:3000
+New frameworks, programming languages, research papers, tools, and platforms appear almost every day.
 
-### Docker
+Most learning platforms teach technologies individually.
 
-```bash
-docker compose up --build
-```
+ATIN focuses on something different.
 
-## Testing
+It teaches the relationships between technologies.
 
-```bash
-cd backend
-pytest tests/ -v
-```
+The goal is to build a platform where anyone can answer questions like:
 
-## API Endpoints
+ - What should I learn next?
+ - How are these technologies connected?
+ - Which skills are required before learning this?
+ - What companies use this technology?
+ - Which technologies are growing rapidly?
+ - What career paths are available?
 
-| Group | Endpoints |
-|-------|-----------|
-| Auth | POST /api/auth/register, /login, /refresh; GET /me |
-| Technologies | GET /technologies, /technologies/{slug}, /search, /categories |
-| Relationships | GET /relationships, /graph, /technologies/{slug}/relationships, /related |
-| Careers | GET /careers, /careers/{id}, /careers/{id}/path |
-| Trends | GET /trends, /trends/summary, /trends/{stage} |
-| Mentor | POST /mentor/chat, GET /mentor/suggestions |
-| Research | GET /research, POST /upload, DELETE /{id} |
-| Learning | POST /learning/generate |
-| Compare | GET /compare/available, GET /compare?tech1=&tech2= |
-| Analytics | GET /analytics/dashboard, /analytics/summary |
-| Users | GET/POST /users/progress, GET/POST/DELETE /users/saved-paths, GET /users/audit-logs |
-
-## Features
-
-- **Interactive Knowledge Graph** — D3.js force-directed graph of 30+ technologies with 50+ relationships
-- **Technology Radar** — Track trends, growth rates, and market momentum
-- **AI Mentor** — Rule-based chatbot with contextual technology guidance
-- **Learning Path Generator** — Personalized roadmaps based on career goals
-- **Career Intelligence** — Salary data, market demand, skill requirements
-- **Side-by-Side Comparison** — Compare technologies across 5 dimensions
-- **Analytics Dashboard** — Category, difficulty, and outlook distributions
-- **Research Paper Analyzer** — Upload and analyze academic papers
-- **Full-Text Search** — Filter by category, difficulty, keyword
-- **JWT Authentication** — Register, login, refresh tokens, audit logging
-- **Rate Limiting** — Per-endpoint rate limits with test bypass
-
-## Credentials
-
-Default admin: `admin` / `admin123` (created at startup if DB is empty)
+ATIN aims to become a living map of the technology world.
