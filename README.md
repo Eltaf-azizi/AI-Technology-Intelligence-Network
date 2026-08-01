@@ -13,3 +13,26 @@ Instead of searching through hundreds of websites, research papers, videos, and 
 ATIN transforms scattered technical information into one structured and interactive knowledge system.
 
 Whether you are a beginner learning Python or an engineer researching Artificial Intelligence, Cloud Computing, Robotics, or Cybersecurity, ATIN helps you understand the complete picture.
+
+## Vision
+
+Technology is becoming more complex every year.
+
+New frameworks, programming languages, research papers, tools, and platforms appear almost every day.
+
+Most learning platforms teach technologies individually.
+
+ATIN focuses on something different.
+
+It teaches the relationships between technologies.
+
+The goal is to build a platform where anyone can answer questions like:
+
+ - What should I learn next?
+ - How are these technologies connected?
+ - Which skills are required before learning this?
+ - What companies use this technology?
+ - Which technologies are growing rapidly?
+ - What career paths are available?
+
+ATIN aims to become a living map of the technology world.
