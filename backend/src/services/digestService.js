@@ -32,6 +32,33 @@ async function buildDailyDigest() {
       ]),
     ]);
 
+    const sentiment = sentimentSummary[0] || {
+      avgScore: 0,
+      total: 0,
+      positive: 0,
+      negative: 0,
+      neutral: 0,
+    };
+
+    const topNews = recentNews.slice(0, 3);
+    const topTrends = recentTrends.slice(0, 3);
+
+    
+  } catch (error) {
+    return {
+      generatedAt: now.toISOString(),
+      summary: 'Live data is currently unavailable. The digest will refresh once the data sources are reachable.',
+      highlights: {
+        newsCount: 0,
+        trendCount: 0,
+        sentimentScore: 0,
+        positiveCount: 0,
+        negativeCount: 0,
+        neutralCount: 0,
+      },
+      news: [],
+      trends: [],
+    };
   }
 }
 
