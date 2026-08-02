@@ -36,3 +36,21 @@ The goal is to build a platform where anyone can answer questions like:
  - What career paths are available?
 
 ATIN aims to become a living map of the technology world.
+
+
+## Problem Statement
+
+Technology knowledge today is scattered across countless resources.
+
+Developers often struggle with:
+
+ - Information overload
+ - Unclear learning paths
+ - Difficulty understanding prerequisites
+ - Finding relationships between technologies
+ - Reading complex research papers
+ - Keeping up with industry trends
+
+Learning becomes slow because information exists everywhere but knowledge exists nowhere.
+
+ATIN solves this by organizing technology into one intelligent ecosystem.
