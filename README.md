@@ -54,3 +54,18 @@ Developers often struggle with:
 Learning becomes slow because information exists everywhere but knowledge exists nowhere.
 
 ATIN solves this by organizing technology into one intelligent ecosystem.
+
+
+## Objectives
+
+The project is designed to:
+
+ - Build a technology knowledge graph.
+ - Explain technologies using AI.
+ - Generate personalized learning paths.
+ - Analyze research papers.
+ - Discover relationships between technologies.
+ - Track technology trends.
+ - Recommend skills based on career goals.
+ - Provide interactive technology visualization.
+ - Create a central intelligence platform for technical knowledge.
