@@ -69,3 +69,31 @@ The project is designed to:
  - Recommend skills based on career goals.
  - Provide interactive technology visualization.
  - Create a central intelligence platform for technical knowledge.
+
+
+## Key Features
+### Interactive Technology Network
+
+Explore technologies through an interactive graph where every technology is connected to related concepts.
+
+Users can navigate between technologies naturally instead of searching manually.
+
+Example:
+
+Python
+
+↓
+
+Machine Learning
+
+↓
+
+Deep Learning
+
+↓
+
+Computer Vision
+
+↓
+
+Autonomous Vehicles
