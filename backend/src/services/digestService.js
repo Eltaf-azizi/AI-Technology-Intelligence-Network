@@ -43,7 +43,42 @@ async function buildDailyDigest() {
     const topNews = recentNews.slice(0, 3);
     const topTrends = recentTrends.slice(0, 3);
 
-    
+    const insightBits = [];
+    if (topNews.length > 0) {
+      insightBits.push(`${topNews.length} recent news items captured this week`);
+    }
+    if (topTrends.length > 0) {
+      insightBits.push(`${topTrends.length} trend updates refreshed recently`);
+    }
+    if (sentiment.total > 0) {
+      const sentimentLabel = sentiment.avgScore >= 0.1 ? 'positive' : sentiment.avgScore <= -0.1 ? 'negative' : 'neutral';
+      insightBits.push(`Overall sentiment is ${sentimentLabel} with an average score of ${parseFloat(sentiment.avgScore.toFixed(2))}`);
+    }
+
+    return {
+      generatedAt: now.toISOString(),
+      summary: insightBits.join(' • '),
+      highlights: {
+        newsCount: recentNews.length,
+        trendCount: recentTrends.length,
+        sentimentScore: parseFloat(sentiment.avgScore.toFixed(2)) || 0,
+        positiveCount: sentiment.positive,
+        negativeCount: sentiment.negative,
+        neutralCount: sentiment.neutral,
+      },
+      news: topNews.map((item) => ({
+        id: item._id,
+        title: item.title,
+        source: item.source,
+        sentimentLabel: item.sentimentLabel || 'neutral',
+      })),
+      trends: topTrends.map((item) => ({
+        id: item._id,
+        name: item.name,
+        stage: item.stage,
+        growthRate: item.growthRate,
+      })),
+    };
   } catch (error) {
     return {
       generatedAt: now.toISOString(),
