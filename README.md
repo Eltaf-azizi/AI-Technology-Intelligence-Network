@@ -142,3 +142,19 @@ Supported examples include:
  - DevOps Engineer
 
 Each roadmap includes prerequisites, estimated learning time, recommended projects, and progress tracking.
+
+
+## Technology Dependency Analyzer
+
+Understand the correct order for learning technologies.
+
+Example:
+
+Kubernetes depends on:
+
+ - Linux
+ - Docker
+ - Networking
+ - Cloud Fundamentals
+
+Instead of guessing where to begin, users receive a clear learning sequence.
