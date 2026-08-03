@@ -125,3 +125,20 @@ Examples:
 
 The AI provides personalized answers based on the knowledge graph.
 
+
+## Learning Path Generator
+
+Generate structured learning roadmaps based on career goals.
+
+Supported examples include:
+
+ - Artificial Intelligence Engineer
+ - Machine Learning Engineer
+ - Cloud Engineer
+ - Cybersecurity Analyst
+ - Robotics Engineer
+ - Data Scientist
+ - Software Engineer
+ - DevOps Engineer
+
+Each roadmap includes prerequisites, estimated learning time, recommended projects, and progress tracking.
