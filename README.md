@@ -97,3 +97,16 @@ Computer Vision
 ↓
 
 Autonomous Vehicles
+
+## Technology Explorer
+
+Every technology includes detailed information such as:
+
+ - Overview
+ - Difficulty Level
+ - Learning Time
+ - Prerequisites
+ - Related Technologies
+ - Industry Applications
+ - Popular Tools
+ - Future Outlook
