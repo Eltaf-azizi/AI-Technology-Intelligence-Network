@@ -110,3 +110,18 @@ Every technology includes detailed information such as:
  - Industry Applications
  - Popular Tools
  - Future Outlook
+
+## AI Technology Mentor
+
+Ask questions naturally.
+
+Examples:
+
+ - Explain Kubernetes.
+ - Compare TensorFlow and PyTorch.
+ - What should I learn after Python?
+ - Create a roadmap for AI Engineering.
+ - Recommend projects for Cybersecurity.
+
+The AI provides personalized answers based on the knowledge graph.
+
